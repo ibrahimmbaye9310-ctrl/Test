@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────
+   JobFinder — Design tokens
+   Bleu nuit = identité / texte fort. Bleu électrique = actions.
+   ───────────────────────────────────────────────────────────── */
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Bleu nuit */
+  --color-navy-50: #f2f4f9;
+  --color-navy-100: #e3e8f2;
+  --color-navy-200: #c6cfe2;
+  --color-navy-300: #9aa8c6;
+  --color-navy-400: #6a7ba3;
+  --color-navy-500: #4a5b85;
+  --color-navy-600: #36456b;
+  --color-navy-700: #263457;
+  --color-navy-800: #182444;
+  --color-navy-900: #0e1a36;
+  --color-navy-950: #070f24;
+
+  /* Bleu électrique */
+  --color-electric-50: #eef3ff;
+  --color-electric-100: #dbe5ff;
+  --color-electric-200: #bccdff;
+  --color-electric-300: #8eaaff;
+  --color-electric-400: #5c7fff;
+  --color-electric-500: #3460ff;
+  --color-electric-600: #1f45f2;
+  --color-electric-700: #1834cc;
+  --color-electric-800: #192fa3;
+  --color-electric-900: #1a2d80;
+
+  /* Surfaces & texte */
+  --color-canvas: #f7f8fb;
+  --color-surface: #ffffff;
+  --color-line: #e6e9f0;
+  --color-line-strong: #d5dae5;
+  --color-ink: #0e1a36;
+  --color-ink-muted: #545f78;
+  --color-ink-subtle: #8a93a8;
+
+  /* États */
+  --color-success-50: #ecfdf3;
+  --color-success-600: #079455;
+  --color-warning-50: #fffaeb;
+  --color-warning-600: #dc6803;
+  --color-danger-50: #fef3f2;
+  --color-danger-600: #d92d20;
+
+  --radius-card: 1rem;
+
+  --shadow-xs: 0 1px 2px rgb(14 26 54 / 0.05);
+  --shadow-card: 0 1px 2px rgb(14 26 54 / 0.04), 0 1px 3px rgb(14 26 54 / 0.06);
+  --shadow-lift: 0 2px 4px rgb(14 26 54 / 0.04), 0 12px 32px -8px rgb(14 26 54 / 0.12);
+  --shadow-glow: 0 0 0 1px rgb(52 96 255 / 0.12), 0 8px 24px -6px rgb(52 96 255 / 0.45);
+
+  --animate-fade-up: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.4s ease-out both;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-canvas text-ink font-sans;
+    font-feature-settings: "ss01", "cv11";
+  }
+  ::selection {
+    @apply bg-electric-100 text-navy-900;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-electric-500;
+  }
+  h1, h2, h3, h4 {
+    @apply tracking-tight text-navy-950;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@utility container-page {
+  @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+}
+
+/* Fond quadrillé discret utilisé dans le hero */
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(14 26 54 / 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(14 26 54 / 0.045) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
