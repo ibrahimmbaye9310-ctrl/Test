@@ -14,6 +14,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Callout, CompanyAvatar, DemoBadge } from "@/components/ui/misc";
 import { jobPostingJsonLd, safeJsonLd } from "@/lib/seo/job-posting";
+import { getCurrentUser } from "@/lib/auth/session";
+import { getOfferInteraction } from "@/lib/candidate/queries";
+import { ApplyPanel } from "@/components/candidate/apply-panel";
+import { SaveJobButton } from "@/components/candidate/action-buttons";
+import { ApplicationStatusBadge } from "@/components/candidate/application-status-badge";
 import { formatRelativeDate } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -40,6 +45,9 @@ export default async function OfferPage({ params }: Props) {
   if (!offer) notFound();
   const [similar, salary] = [await getSimilarOffers(offer), formatSalary(offer)];
   const jsonLd = jobPostingJsonLd(offer);
+  const user = offer.isDemo ? null : await getCurrentUser();
+  const interaction = user?.profile.role === "candidate" ? await getOfferInteraction(user.id, offer.id) : null;
+  const loginHref = `/connexion?suite=${encodeURIComponent(`/offres/${offer.slug}`)}`;
 
   const facts = [
     { icon: Briefcase, label: "Contrat", value: labelOf(CONTRACT_TYPES, offer.contractType) },
@@ -139,10 +147,32 @@ export default async function OfferPage({ params }: Props) {
                   <Button className="w-full" size="lg" disabled>
                     <FlaskConical aria-hidden /> Candidature indisponible
                   </Button>
+                ) : !user ? (
+                  <>
+                    <ButtonLink href={loginHref} className="w-full" size="lg">
+                      Postuler
+                    </ButtonLink>
+                    <ButtonLink href={loginHref} variant="secondary" className="w-full">
+                      Enregistrer l&apos;offre
+                    </ButtonLink>
+                  </>
+                ) : interaction ? (
+                  <>
+                    {interaction.application ? (
+                      <div className="rounded-xl bg-navy-50/60 p-4 text-sm">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-medium text-navy-900">Vous avez postulé</span>
+                          <ApplicationStatusBadge status={interaction.application.status} />
+                        </div>
+                        <Link href="/espace/candidatures" className="mt-2 inline-block text-electric-600 hover:underline">Suivre ma candidature</Link>
+                      </div>
+                    ) : (
+                      <ApplyPanel offerId={offer.id} cvFilename={user.profile.cv_filename} />
+                    )}
+                    <SaveJobButton offerId={offer.id} initialSaved={interaction.saved} />
+                  </>
                 ) : (
-                  <ButtonLink href={`/connexion?suite=${encodeURIComponent(`/offres/${offer.slug}`)}`} className="w-full" size="lg">
-                    Postuler
-                  </ButtonLink>
+                  <p className="rounded-xl bg-navy-50/60 p-4 text-sm text-ink-muted">Connectez-vous avec un compte candidat pour postuler.</p>
                 )}
                 <ShareButton title={offer.title} path={`/offres/${offer.slug}`} />
               </div>

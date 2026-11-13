@@ -10,6 +10,11 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    // CV (4 Mo max) et photos transitent par une Server Action qui vérifie leur contenu réel.
+    // Vercel limite de toute façon le corps d'une requête à 4,5 Mo.
+    serverActions: { bodySizeLimit: "4.5mb" },
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

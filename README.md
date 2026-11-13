@@ -26,7 +26,13 @@ npm run dev                  # http://localhost:3000
 | `npm run check` | Typage, lint, tests et build (à lancer avant chaque commit) |
 
 ## Variables d'environnement
-Voir [`.env.example`](.env.example). Aucune clé secrète ne doit être commitée. Les services externes (Supabase, Stripe, Resend) seront configurés aux phases 3, 7 et 8, avec un guide pas à pas.
+Voir [`.env.example`](.env.example). Aucune clé secrète ne doit être commitée.
+- Supabase (base, comptes, fichiers) : [`docs/SUPABASE.md`](docs/SUPABASE.md)
+- Stripe et Resend : phases 7 et 8.
+
+## Tests
+- `npm test` : tests unitaires (recherche, géographie, validation, fichiers, SEO).
+- `supabase/tests/run.sh` : migrations + 52 tests de sécurité RLS sur un PostgreSQL local (variables `PGHOST`, `PGPORT`, `PGUSER`).
 
 ## Données de démonstration
 Tant qu'aucune base n'est branchée, des offres **fictives** illustrent l'interface. Elles portent le badge « Exemple fictif », ne sont pas indexées et on ne peut pas y postuler. En production : `NEXT_PUBLIC_ENABLE_DEMO_DATA=false`.
