@@ -22,7 +22,8 @@ npm run dev                  # http://localhost:3000
 | `npm run build` / `npm start` | Build et serveur de production |
 | `npm run typecheck` | Vérification TypeScript |
 | `npm run lint` | ESLint (règles Next.js + Core Web Vitals) |
-| `npm run check` | Les trois à la suite (à lancer avant chaque commit) |
+| `npm run test` | Tests unitaires (Vitest) |
+| `npm run check` | Typage, lint, tests et build (à lancer avant chaque commit) |
 
 ## Variables d'environnement
 Voir [`.env.example`](.env.example). Aucune clé secrète ne doit être commitée. Les services externes (Supabase, Stripe, Resend) seront configurés aux phases 3, 7 et 8, avec un guide pas à pas.
@@ -34,3 +35,6 @@ Tant qu'aucune base n'est branchée, des offres **fictives** illustrent l'interf
 1. Importer le dépôt GitHub sur [vercel.com/new](https://vercel.com/new) (framework détecté : Next.js).
 2. Renseigner les variables d'environnement de `.env.example` dans *Settings → Environment Variables*.
 3. Déployer. Le guide complet (domaine, webhooks Stripe, DNS Resend) sera fourni en phase 9.
+
+## Données géographiques
+`src/lib/geo/communes-idf.json` est généré (ne pas modifier à la main). Pour le régénérer : voir l'en-tête de `scripts/build-communes-idf.py` (paquets npm `@etalab/decoupage-administratif`, `codes-postaux`, `all-the-cities` en tant que fichiers de données).

@@ -9,6 +9,7 @@ import { Faq, FAQ_ITEMS } from "@/components/landing/faq";
 import { FinalCta } from "@/components/landing/final-cta";
 import { getLatestOffers } from "@/lib/jobs/queries";
 import { getApprovedTestimonials } from "@/lib/testimonials";
+import { safeJsonLd } from "@/lib/seo/job-posting";
 
 // Les dates relatives ("il y a 2 jours") sont recalculées toutes les heures.
 export const revalidate = 3600;
@@ -24,7 +25,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }} />
       <Hero />
       <Categories />
       <LatestOffers offers={offers} />

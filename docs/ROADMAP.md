@@ -3,7 +3,7 @@
 | Phase | Contenu | État |
 |---|---|---|
 | 1 | Structure, design system, layout, page d'accueil, pages publiques et légales | ✅ |
-| 2 | Moteur de recherche complet (filtres, rayon, tri, pagination), page offre détaillée | ⏳ |
+| 2 | Moteur de recherche complet (filtres, rayon, tri, pagination), page offre détaillée | ✅ |
 | 3 | Supabase Auth (inscription, connexion, mot de passe oublié), espace candidat (profil, CV, favoris, candidatures) | ⏳ |
 | 4 | Espace recruteur : entreprise, CRUD d'offres, gestion des candidatures, CV, statistiques | ⏳ |
 | 5 | Migrations SQL, RLS, triggers, validation serveur, limitation de débit, contrôle des fichiers | ⏳ |
