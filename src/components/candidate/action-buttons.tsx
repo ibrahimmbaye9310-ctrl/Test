@@ -68,13 +68,15 @@ export function ExportDataButton() {
 
 export function DeleteAccountForm() {
   const [state, action] = useActionState(deleteAccountAction, initialActionState);
+  // Champ contrôlé : la réinitialisation automatique du formulaire par React ne peut pas effacer la saisie.
+  const [typed, setTyped] = useState("");
   return (
     <form action={action} className="space-y-4">
       <FormMessage state={state} />
-      <Field label="Pour confirmer, tapez SUPPRIMER" htmlFor="confirm" error={state.fieldErrors?.confirm}>
-        <Input id="confirm" name="confirm" autoComplete="off" placeholder="SUPPRIMER" className="max-w-xs" />
+      <Field label="Pour confirmer, tapez SUPPRIMER" htmlFor="delete-confirm" error={state.fieldErrors?.confirm}>
+        <Input id="delete-confirm" name="confirm" value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="off" placeholder="SUPPRIMER" className="max-w-xs" aria-invalid={state.fieldErrors?.confirm ? true : undefined} />
       </Field>
-      <SubmitButton variant="danger">
+      <SubmitButton variant="danger" disabled={typed !== "SUPPRIMER"}>
         <Trash2 aria-hidden /> Supprimer définitivement mon compte
       </SubmitButton>
     </form>

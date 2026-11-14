@@ -18,7 +18,7 @@ export async function signUpAction(_: ActionState, formData: FormData): Promise<
   const { email, password, fullName, role, companyName } = parsed.data;
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data: signUp, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -33,6 +33,8 @@ export async function signUpAction(_: ActionState, formData: FormData): Promise<
     console.error("[signUp]", error.code, error.message);
     return { error: "L'inscription a échoué. Réessayez dans un instant.", values: echo(formData) };
   }
+  // Confirmation par e-mail désactivée dans Supabase : l'utilisateur est déjà connecté.
+  if (signUp.session) redirect(homeForRole(role));
   // Message identique que l'adresse existe déjà ou non (pas d'énumération des comptes).
   redirect(`/inscription/confirmation?email=${encodeURIComponent(email)}`);
 }

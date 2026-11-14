@@ -159,12 +159,17 @@ export default async function OfferPage({ params }: Props) {
                 ) : interaction ? (
                   <>
                     {interaction.application ? (
-                      <div className="rounded-xl bg-navy-50/60 p-4 text-sm">
+                      <div className="rounded-xl bg-success-50 p-4 text-sm ring-1 ring-inset ring-success-600/20" role="status">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-medium text-navy-900">Vous avez postulé</span>
+                          <span className="inline-flex items-center gap-1.5 font-medium text-success-600">
+                            <Check className="size-4" aria-hidden /> Candidature envoyée
+                          </span>
                           <ApplicationStatusBadge status={interaction.application.status} />
                         </div>
-                        <Link href="/espace/candidatures" className="mt-2 inline-block text-electric-600 hover:underline">Suivre ma candidature</Link>
+                        <p className="mt-1 text-ink-muted">
+                          Le {dateFmt.format(new Date(interaction.application.created_at))}.{" "}
+                          <Link href="/espace/candidatures" className="font-medium text-electric-600 hover:underline">Suivre ma candidature</Link>
+                        </p>
                       </div>
                     ) : (
                       <ApplyPanel offerId={offer.id} cvFilename={user.profile.cv_filename} />
