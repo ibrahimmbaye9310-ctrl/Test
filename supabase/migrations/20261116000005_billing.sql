@@ -5,12 +5,12 @@
 
 -- ─── Qui peut écrire la facturation ? ──────────────────────────────────────
 -- En production : le webhook Stripe du serveur, avec la clé secrète Supabase (rôle service_role).
--- En environnement de test : une clé de facturation transmise dans l'en-tête x-billing-key.
+-- En environnement de test (facultatif) : une clé de facturation envoyée dans l'en-tête x-billing-key ;
+-- la base n'en conserve que l'empreinte SHA-256 (private.settings, clé « billing_key_sha256 »).
 create schema if not exists private;
 revoke all on schema private from public, anon, authenticated;
 create table if not exists private.settings (key text primary key, value text not null);
-insert into private.settings (key, value) values ('billing_key', encode(extensions.gen_random_bytes(32), 'hex'))
-  on conflict (key) do nothing;
+delete from private.settings where key = 'billing_key'; -- ancienne version (clé en clair) : supprimée
 
 -- Rôle RÉEL de la requête. Attention : dans une fonction SECURITY DEFINER, current_user vaut le propriétaire de la
 -- fonction ; on lit donc le réglage « role » (posé par PostgREST via SET ROLE) et la session.
@@ -30,8 +30,11 @@ begin
     header := current_setting('request.headers', true)::json ->> 'x-billing-key';
   exception when others then header := null;
   end;
-  return header is not null and length(header) >= 32
-    and header = (select value from private.settings where key = 'billing_key');
+  -- coalesce : sans empreinte enregistrée, la comparaison vaut NULL ; il faut alors refuser explicitement.
+  return coalesce(
+    header is not null and length(header) >= 32
+      and encode(extensions.digest(header, 'sha256'), 'hex') = (select value from private.settings where key = 'billing_key_sha256'),
+    false);
 end $$;
 
 -- ─── Crédits d'annonce à l'unité ───────────────────────────────────────────

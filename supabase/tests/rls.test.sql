@@ -301,7 +301,8 @@ select t.denied('recruteur : fausse clé de facturation', $$select set_config('r
 reset role;
 
 -- Le webhook (clé de facturation valide) enregistre l'achat d'une annonce à l'unité.
-select value as billing_key from private.settings where key = 'billing_key' \gset
+select 'cle-de-facturation-de-test-0123456789abcdef' as billing_key \gset
+insert into private.settings (key, value) values ('billing_key_sha256', encode(extensions.digest(:'billing_key', 'sha256'), 'hex')) on conflict (key) do update set value = excluded.value;
 set role anon; set request.jwt.claim.sub = '';
 select set_config('request.headers', json_build_object('x-billing-key', :'billing_key')::text, false);
 select t.count_is('webhook : événement nouveau', $$select 1 where public.billing_event_first_seen('evt_1', 'checkout.session.completed')$$, 1);
