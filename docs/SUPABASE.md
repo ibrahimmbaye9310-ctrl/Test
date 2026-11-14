@@ -13,6 +13,7 @@ Puis, de la même façon et dans l'ordre :
 | `20261113000001_core_schema.sql` | Profils, entreprises, offres, candidatures, favoris, CV et photos | installé |
 | `20261114000002_recruiter_space.sql` | Logos (bucket public), règles de publication, statistiques de vues | installé |
 | `20261115000003_security_notifications.sql` | Notifications, signalements, abonnements, paiements, limitation, purge RGPD | installé |
+| `20261115000004_admin.sql` | Modération, suspension, vérification des entreprises, avis, journal d'administration | installé |
 
 > Les migrations des phases suivantes se lancent de la même façon, dans l'ordre de leur nom de fichier. Elles sont ré-exécutables.
 > Elles sont testées avant livraison sur un PostgreSQL local : `PGHOST=… PGPORT=… PGUSER=postgres supabase/tests/run.sh`.
@@ -73,8 +74,12 @@ Le rôle admin ne peut jamais être obtenu depuis le site. Après avoir créé v
 update public.profiles set role = 'admin' where id = (select id from auth.users where email = 'vous@exemple.fr');
 ```
 
-## 5. Ce que protège la base (RLS)
-Vérifié par 95 tests automatisés (`supabase/tests/rls.test.sql`) :
+## 5. Modération
+- Une entreprise **non vérifiée** qui publie (ou modifie le contenu d'une offre en ligne) voit son offre passer « en vérification » ; l'administrateur la valide ou la refuse avec un motif depuis `/admin/moderation`.
+- Une entreprise **vérifiée** (bouton « Vérifier » dans `/admin/entreprises`, après contrôle du SIRET) publie directement.
+
+## 6. Ce que protège la base (RLS)
+Vérifié par 123 tests automatisés (`supabase/tests/rls.test.sql`) :
 - chaque utilisateur ne lit et ne modifie que son profil ; personne ne peut changer son propre rôle ;
 - un recruteur ne voit un candidat (profil, CV, photo) que s'il a postulé à l'une de **ses** offres ;
 - seul le recruteur propriétaire change le statut d'une candidature, et uniquement le statut ;
