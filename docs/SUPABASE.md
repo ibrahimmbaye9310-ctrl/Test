@@ -7,7 +7,13 @@ Projet : **Jobfinder** — région **West EU (Ireland) `eu-west-1`** (Union euro
 2. Copiez **tout** le contenu de [`supabase/migrations/20261113000001_core_schema.sql`](../supabase/migrations/20261113000001_core_schema.sql), collez, puis **Run**.
 3. Résultat attendu : `Success. No rows returned`. Vérifiez dans **Table Editor** : `profiles`, `companies`, `job_offers`, `applications`, `saved_jobs` ; dans **Storage** : buckets `avatars` et `cvs` (privés).
 
-> Les migrations suivantes (phases 4 à 8) se lancent de la même façon, dans l'ordre de leur nom de fichier.
+Puis, de la même façon et dans l'ordre :
+| Fichier | Contenu | État |
+|---|---|---|
+| `20261113000001_core_schema.sql` | Profils, entreprises, offres, candidatures, favoris, CV et photos | installé |
+| `20261114000002_recruiter_space.sql` | Logos (bucket public), règles de publication, statistiques de vues | installé |
+
+> Les migrations des phases suivantes se lancent de la même façon, dans l'ordre de leur nom de fichier. Elles sont ré-exécutables.
 > Elles sont testées avant livraison sur un PostgreSQL local : `PGHOST=… PGPORT=… PGUSER=postgres supabase/tests/run.sh`.
 
 ## 2. Variables d'environnement
@@ -67,10 +73,12 @@ update public.profiles set role = 'admin' where id = (select id from auth.users 
 ```
 
 ## 5. Ce que protège la base (RLS)
-Vérifié par 52 tests automatisés (`supabase/tests/rls.test.sql`) :
+Vérifié par 72 tests automatisés (`supabase/tests/rls.test.sql`) :
 - chaque utilisateur ne lit et ne modifie que son profil ; personne ne peut changer son propre rôle ;
 - un recruteur ne voit un candidat (profil, CV, photo) que s'il a postulé à l'une de **ses** offres ;
 - seul le recruteur propriétaire change le statut d'une candidature, et uniquement le statut ;
 - les visiteurs ne voient que les offres publiées et non expirées ;
+- un recruteur ne peut ni mettre son offre « à la une », ni modifier le compteur de vues, ni fixer les dates de publication ;
+- les statistiques de vues d'une offre ne sont lisibles que par son propriétaire ;
 - CV et photos sont privés (URL signées de courte durée), rangés dans un dossier par utilisateur ;
 - la suppression d'un compte efface en cascade profil, candidatures et favoris (et les fichiers, via l'application).

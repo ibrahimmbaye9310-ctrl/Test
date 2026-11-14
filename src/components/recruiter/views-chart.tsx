@@ -20,7 +20,7 @@ export function ViewsChart({ data }: { data: { day: string; views: number }[] })
         })}
         {first && <text x="0" y={H + 16} className="fill-ink-subtle text-[11px]">{fmt.format(new Date(first.day))}</text>}
         {last && <text x={W} y={H + 16} textAnchor="end" className="fill-ink-subtle text-[11px]">Aujourd&apos;hui</text>}
-        <text x={W} y="12" textAnchor="end" className="fill-ink-subtle text-[11px]">max {max}</text>
+        <text x="0" y="12" className="fill-ink-subtle text-[11px]">max {max} vue{max > 1 ? "s" : ""}/jour</text>
       </svg>
     </figure>
   );

@@ -2,6 +2,7 @@
 
 import { useActionState, useState, type ReactNode } from "react";
 import { Field, Input, Select, Textarea } from "@/components/ui/input";
+import { ActionForm } from "@/components/forms/action-form";
 import { FormMessage, SubmitButton, errorProps } from "@/components/forms/form-feedback";
 import { LocationInput } from "@/components/jobs/location-input";
 import { saveOfferAction } from "@/lib/recruiter/actions";
@@ -26,7 +27,7 @@ function Section({ title, description, children }: { title: string; description?
 
 export function OfferForm({ offer }: { offer?: JobOfferRecord }) {
   const save = saveOfferAction.bind(null, offer?.id ?? null);
-  const [state, action] = useActionState(save, initialActionState);
+  const [state, action, isPending] = useActionState(save, initialActionState);
   const v = (k: string, saved: unknown) => state.values?.[k] ?? (saved == null ? "" : String(saved));
   const err = (k: string) => state.fieldErrors?.[k];
   const [contract, setContract] = useState(v("contractType", offer?.contract_type));
@@ -36,7 +37,7 @@ export function OfferForm({ offer }: { offer?: JobOfferRecord }) {
   const checkedSchedules: string[] = state.values ? (state.values.schedules ?? "").split(",").filter(Boolean) : offer?.schedules ?? [];
 
   return (
-    <form action={action} className="space-y-6" noValidate>
+    <ActionForm action={action} pending={isPending} className="space-y-6" noValidate>
       <FormMessage state={state} />
 
       <Section title="Le poste">
@@ -153,6 +154,6 @@ export function OfferForm({ offer }: { offer?: JobOfferRecord }) {
           {isPublished ? "Enregistrer les modifications" : "Publier l'offre"}
         </SubmitButton>
       </div>
-    </form>
+    </ActionForm>
   );
 }

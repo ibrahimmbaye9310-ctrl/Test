@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FileText, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
+import { ActionForm } from "@/components/forms/action-form";
 import { FormMessage, SubmitButton } from "@/components/forms/form-feedback";
 import { applyAction } from "@/lib/candidate/actions";
 import { initialActionState } from "@/lib/validation/common";
@@ -12,7 +13,7 @@ import { initialActionState } from "@/lib/validation/common";
 /** Formulaire de candidature : le profil (CV, disponibilités…) est joint automatiquement. */
 export function ApplyPanel({ offerId, cvFilename }: { offerId: string; cvFilename: string | null }) {
   const [open, setOpen] = useState(false);
-  const [state, action] = useActionState(applyAction, initialActionState);
+  const [state, action, isPending] = useActionState(applyAction, initialActionState);
 
   if (state.ok)
     return (
@@ -32,7 +33,7 @@ export function ApplyPanel({ offerId, cvFilename }: { offerId: string; cvFilenam
     );
 
   return (
-    <form action={action} className="space-y-3 rounded-xl bg-navy-50/60 p-4">
+    <ActionForm action={action} pending={isPending} className="space-y-3 rounded-xl bg-navy-50/60 p-4">
       <input type="hidden" name="offerId" value={offerId} />
       <FormMessage state={state} />
       <div className="flex items-center gap-2 text-sm">
@@ -54,6 +55,6 @@ export function ApplyPanel({ offerId, cvFilename }: { offerId: string; cvFilenam
         <Button variant="ghost" onClick={() => setOpen(false)}>Annuler</Button>
         <SubmitButton className="flex-1">Envoyer ma candidature</SubmitButton>
       </div>
-    </form>
+    </ActionForm>
   );
 }

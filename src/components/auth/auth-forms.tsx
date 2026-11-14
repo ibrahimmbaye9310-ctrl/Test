@@ -4,15 +4,16 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { Building2, Mail, User } from "lucide-react";
 import { Field, Input } from "@/components/ui/input";
+import { ActionForm } from "@/components/forms/action-form";
 import { FormMessage, PasswordInput, SubmitButton, errorProps } from "@/components/forms/form-feedback";
 import { requestPasswordResetAction, signInAction, signUpAction, updatePasswordAction } from "@/lib/auth/actions";
 import { initialActionState } from "@/lib/validation/common";
 import { ButtonLink } from "@/components/ui/button";
 
 export function LoginForm({ next }: { next?: string }) {
-  const [state, action] = useActionState(signInAction, initialActionState);
+  const [state, action, isPending] = useActionState(signInAction, initialActionState);
   return (
-    <form action={action} className="space-y-4" noValidate>
+    <ActionForm action={action} pending={isPending} className="space-y-4" noValidate>
       <FormMessage state={state} />
       {next && <input type="hidden" name="suite" value={next} />}
       <Field label="Adresse e-mail" htmlFor="email" error={state.fieldErrors?.email}>
@@ -29,14 +30,14 @@ export function LoginForm({ next }: { next?: string }) {
       <SubmitButton size="lg" className="w-full">
         Se connecter
       </SubmitButton>
-    </form>
+    </ActionForm>
   );
 }
 
 export function SignupForm({ role }: { role: "candidate" | "recruiter" }) {
-  const [state, action] = useActionState(signUpAction, initialActionState);
+  const [state, action, isPending] = useActionState(signUpAction, initialActionState);
   return (
-    <form action={action} className="space-y-4" noValidate>
+    <ActionForm action={action} pending={isPending} className="space-y-4" noValidate>
       <FormMessage state={state} />
       <input type="hidden" name="role" value={role} />
       {role === "recruiter" && (
@@ -67,15 +68,15 @@ export function SignupForm({ role }: { role: "candidate" | "recruiter" }) {
       <SubmitButton size="lg" className="w-full">
         Créer mon compte
       </SubmitButton>
-    </form>
+    </ActionForm>
   );
 }
 
 export function ForgotPasswordForm() {
-  const [state, action] = useActionState(requestPasswordResetAction, initialActionState);
+  const [state, action, isPending] = useActionState(requestPasswordResetAction, initialActionState);
   if (state.ok) return <FormMessage state={state} />;
   return (
-    <form action={action} className="space-y-4" noValidate>
+    <ActionForm action={action} pending={isPending} className="space-y-4" noValidate>
       <FormMessage state={state} />
       <Field label="Adresse e-mail" htmlFor="email" error={state.fieldErrors?.email}>
         <Input id="email" name="email" defaultValue={state.values?.email} type="email" autoComplete="email" icon={<Mail />} required {...errorProps(state, "email")} />
@@ -83,12 +84,12 @@ export function ForgotPasswordForm() {
       <SubmitButton size="lg" className="w-full">
         Recevoir le lien
       </SubmitButton>
-    </form>
+    </ActionForm>
   );
 }
 
 export function NewPasswordForm({ redirectTo }: { redirectTo: string }) {
-  const [state, action] = useActionState(updatePasswordAction, initialActionState);
+  const [state, action, isPending] = useActionState(updatePasswordAction, initialActionState);
   if (state.ok)
     return (
       <div className="space-y-4">
@@ -97,7 +98,7 @@ export function NewPasswordForm({ redirectTo }: { redirectTo: string }) {
       </div>
     );
   return (
-    <form action={action} className="space-y-4" noValidate>
+    <ActionForm action={action} pending={isPending} className="space-y-4" noValidate>
       <FormMessage state={state} />
       <Field label="Nouveau mot de passe" htmlFor="password" hint="10 caractères minimum, dont une lettre et un chiffre." error={state.fieldErrors?.password}>
         <PasswordInput id="password" name="password" autoComplete="new-password" required {...errorProps(state, "password")} />
@@ -108,6 +109,6 @@ export function NewPasswordForm({ redirectTo }: { redirectTo: string }) {
       <SubmitButton size="lg" className="w-full">
         Enregistrer
       </SubmitButton>
-    </form>
+    </ActionForm>
   );
 }

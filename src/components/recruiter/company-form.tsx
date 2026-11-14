@@ -5,6 +5,7 @@ import { ImageUp, Trash2 } from "lucide-react";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CompanyAvatar } from "@/components/ui/misc";
+import { ActionForm } from "@/components/forms/action-form";
 import { FormMessage, SubmitButton, errorProps } from "@/components/forms/form-feedback";
 import { deleteLogoAction, saveCompanyAction, uploadLogoAction } from "@/lib/recruiter/actions";
 import { initialActionState, type ActionState } from "@/lib/validation/common";
@@ -13,11 +14,11 @@ import type { Company } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
 
 export function CompanyForm({ company, suggestedName }: { company: Company | null; suggestedName?: string }) {
-  const [state, action] = useActionState(saveCompanyAction, initialActionState);
+  const [state, action, isPending] = useActionState(saveCompanyAction, initialActionState);
   const v = (k: string, saved: string | null | undefined) => state.values?.[k] ?? saved ?? "";
   const err = (k: string) => state.fieldErrors?.[k];
   return (
-    <form action={action} className="space-y-4" noValidate>
+    <ActionForm action={action} pending={isPending} className="space-y-4" noValidate>
       <Field label="Nom de l'entreprise" htmlFor="name" error={err("name")}>
         <Input id="name" name="name" defaultValue={v("name", company?.name ?? suggestedName)} required maxLength={120} autoComplete="organization" {...errorProps(state, "name")} />
       </Field>
@@ -42,7 +43,7 @@ export function CompanyForm({ company, suggestedName }: { company: Company | nul
         <FormMessage state={state} className="mr-auto py-2" />
         <SubmitButton>{company ? "Enregistrer" : "Créer mon entreprise"}</SubmitButton>
       </div>
-    </form>
+    </ActionForm>
   );
 }
 

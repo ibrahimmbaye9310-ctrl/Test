@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Bookmark, BookmarkCheck, Download, Trash2, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
+import { ActionForm } from "@/components/forms/action-form";
 import { FormMessage, SubmitButton } from "@/components/forms/form-feedback";
 import { deleteAccountAction, toggleSavedJobAction, withdrawApplicationAction } from "@/lib/candidate/actions";
 import { initialActionState, type ActionState } from "@/lib/validation/common";
@@ -67,11 +68,11 @@ export function ExportDataButton() {
 }
 
 export function DeleteAccountForm() {
-  const [state, action] = useActionState(deleteAccountAction, initialActionState);
+  const [state, action, isPending] = useActionState(deleteAccountAction, initialActionState);
   // Champ contrôlé : la réinitialisation automatique du formulaire par React ne peut pas effacer la saisie.
   const [typed, setTyped] = useState("");
   return (
-    <form action={action} className="space-y-4">
+    <ActionForm action={action} pending={isPending} className="space-y-4">
       <FormMessage state={state} />
       <Field label="Pour confirmer, tapez SUPPRIMER" htmlFor="delete-confirm" error={state.fieldErrors?.confirm}>
         <Input id="delete-confirm" name="confirm" value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="off" placeholder="SUPPRIMER" className="max-w-xs" aria-invalid={state.fieldErrors?.confirm ? true : undefined} />
@@ -79,6 +80,6 @@ export function DeleteAccountForm() {
       <SubmitButton variant="danger" disabled={typed !== "SUPPRIMER"}>
         <Trash2 aria-hidden /> Supprimer définitivement mon compte
       </SubmitButton>
-    </form>
+    </ActionForm>
   );
 }

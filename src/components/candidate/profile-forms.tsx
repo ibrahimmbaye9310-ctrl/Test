@@ -4,6 +4,7 @@ import { useActionState, useRef, useState, useTransition, type ReactNode } from 
 import { FileText, ImageUp, Plus, Trash2, Upload, X } from "lucide-react";
 import { Field, Input, Select, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ActionForm } from "@/components/forms/action-form";
 import { FormMessage, SubmitButton, errorProps } from "@/components/forms/form-feedback";
 import {
   deleteFileAction, updateAvailabilityAction, updatePreferencesAction, updateProfileInfoAction, updateSkillsAction, uploadFileAction,
@@ -26,12 +27,12 @@ export function ProfileSection({ id, title, description, children }: { id: strin
 }
 
 export function InfoForm({ profile }: { profile: Profile }) {
-  const [state, action] = useActionState(updateProfileInfoAction, initialActionState);
+  const [state, action, isPending] = useActionState(updateProfileInfoAction, initialActionState);
   const err = (k: string) => state.fieldErrors?.[k];
   // Après une erreur, on réaffiche la saisie ; sinon les valeurs enregistrées.
   const v = (k: string, saved: string | null) => state.values?.[k] ?? saved ?? "";
   return (
-    <form action={action} className="space-y-4" noValidate>
+    <ActionForm action={action} pending={isPending} className="space-y-4" noValidate>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Nom complet" htmlFor="fullName" error={err("fullName")}>
           <Input id="fullName" name="fullName" defaultValue={v("fullName", profile.full_name)} autoComplete="name" required maxLength={120} {...errorProps(state, "fullName")} />
@@ -53,7 +54,7 @@ export function InfoForm({ profile }: { profile: Profile }) {
         <Textarea id="bio" name="bio" defaultValue={v("bio", profile.bio)} maxLength={2000} rows={5} {...errorProps(state, "bio")} />
       </Field>
       <FormFooter state={state} />
-    </form>
+    </ActionForm>
   );
 }
 
@@ -141,7 +142,7 @@ export function FileUpload({ kind, current }: { kind: CandidateFileKind; current
 }
 
 export function SkillsForm({ initial }: { initial: string[] }) {
-  const [state, action] = useActionState(updateSkillsAction, initialActionState);
+  const [state, action, isPending] = useActionState(updateSkillsAction, initialActionState);
   const [skills, setSkills] = useState(initial);
   const [draft, setDraft] = useState("");
   const add = () => {
@@ -150,7 +151,7 @@ export function SkillsForm({ initial }: { initial: string[] }) {
     setDraft("");
   };
   return (
-    <form action={action} className="space-y-4">
+    <ActionForm action={action} pending={isPending} className="space-y-4">
       {skills.map((s) => <input key={s} type="hidden" name="skills" value={s} />)}
       <ul className="flex flex-wrap gap-2" aria-label="Compétences">
         {skills.length === 0 && <li className="text-sm text-ink-subtle">Aucune compétence ajoutée.</li>}
@@ -183,7 +184,7 @@ export function SkillsForm({ initial }: { initial: string[] }) {
         </Button>
       </div>
       <FormFooter state={state} />
-    </form>
+    </ActionForm>
   );
 }
 
@@ -199,9 +200,9 @@ function ChipCheckbox({ name, value, label, defaultChecked }: { name: string; va
 }
 
 export function AvailabilityForm({ profile }: { profile: Profile }) {
-  const [state, action] = useActionState(updateAvailabilityAction, initialActionState);
+  const [state, action, isPending] = useActionState(updateAvailabilityAction, initialActionState);
   return (
-    <form action={action} className="space-y-5">
+    <ActionForm action={action} pending={isPending} className="space-y-5">
       <fieldset>
         <legend className="mb-3 text-sm font-medium text-navy-900">Quand pouvez-vous travailler ?</legend>
         <div className="flex flex-wrap gap-2">
@@ -212,14 +213,14 @@ export function AvailabilityForm({ profile }: { profile: Profile }) {
         <Input id="availabilityNote" name="availabilityNote" defaultValue={profile.availability_note ?? ""} maxLength={300} />
       </Field>
       <FormFooter state={state} />
-    </form>
+    </ActionForm>
   );
 }
 
 export function PreferencesForm({ profile }: { profile: Profile }) {
-  const [state, action] = useActionState(updatePreferencesAction, initialActionState);
+  const [state, action, isPending] = useActionState(updatePreferencesAction, initialActionState);
   return (
-    <form action={action} className="space-y-6">
+    <ActionForm action={action} pending={isPending} className="space-y-6">
       <fieldset>
         <legend className="mb-3 text-sm font-medium text-navy-900">Contrats recherchés</legend>
         <div className="flex flex-wrap gap-2">
@@ -254,6 +255,6 @@ export function PreferencesForm({ profile }: { profile: Profile }) {
         </span>
       </label>
       <FormFooter state={state} />
-    </form>
+    </ActionForm>
   );
 }

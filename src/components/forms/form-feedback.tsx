@@ -6,13 +6,15 @@ import { AlertCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ActionState } from "@/lib/validation/common";
+import { useActionFormPending } from "./action-form";
 import { cn } from "@/lib/utils";
 
 /** Bouton d'envoi qui affiche un indicateur pendant l'exécution de la Server Action. */
 export function SubmitButton({ children, ...props }: ComponentProps<typeof Button>) {
   const { pending } = useFormStatus();
+  const actionPending = useActionFormPending();
   return (
-    <Button type="submit" loading={pending} {...props}>
+    <Button type="submit" loading={pending || actionPending} {...props}>
       {children}
     </Button>
   );
