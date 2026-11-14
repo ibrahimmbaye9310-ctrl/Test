@@ -1,5 +1,6 @@
 import type { JobOffer } from "@/types/job";
 import type { PublicJobOffer } from "@/lib/supabase/database.types";
+import { logoUrl } from "@/lib/storage";
 
 /** Ligne SQL (snake_case) → objet de l'interface. */
 export function offerFromRow(r: PublicJobOffer): JobOffer {
@@ -9,7 +10,7 @@ export function offerFromRow(r: PublicJobOffer): JobOffer {
     slug: r.slug,
     title: r.title,
     companyName: r.company_name,
-    companyLogoUrl: null,
+    companyLogoUrl: logoUrl(r.company_logo_path),
     companyDescription: r.company_description ?? "",
     city: r.city,
     postalCode: r.postal_code,

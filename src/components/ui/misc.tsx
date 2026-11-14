@@ -46,7 +46,13 @@ export function SectionHeading({ eyebrow, title, description, align = "left", cl
   );
 }
 
-export function CompanyAvatar({ name, className }: { name: string; className?: string }) {
+/** Logo de l'entreprise s'il existe, sinon ses initiales. */
+export function CompanyAvatar({ name, logoUrl, className }: { name: string; logoUrl?: string | null; className?: string }) {
+  if (logoUrl)
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- logo déjà optimisé côté stockage, taille fixe
+      <img src={logoUrl} alt="" width={44} height={44} loading="lazy" className={cn("size-11 shrink-0 rounded-xl bg-surface object-contain ring-1 ring-line", className)} />
+    );
   const initials = name
     .replace(/\(.*?\)/g, "")
     .split(/\s+/)

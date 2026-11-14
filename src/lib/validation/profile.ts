@@ -46,9 +46,11 @@ export const applicationSchema = z.object({
 export const FILE_RULES = {
   cv: { bucket: "cvs", maxBytes: 4 * 1024 * 1024, mime: ["application/pdf"], label: "PDF, 4 Mo maximum" },
   avatar: { bucket: "avatars", maxBytes: 2 * 1024 * 1024, mime: ["image/jpeg", "image/png", "image/webp"], label: "JPG, PNG ou WebP, 2 Mo maximum" },
+  logo: { bucket: "logos", maxBytes: 1024 * 1024, mime: ["image/jpeg", "image/png", "image/webp"], label: "JPG, PNG ou WebP, 1 Mo maximum" },
 } as const;
 
 export type FileKind = keyof typeof FILE_RULES;
+export type CandidateFileKind = Exclude<FileKind, "logo">;
 
 /** Détecte le vrai format à partir des premiers octets. */
 export function sniffMime(bytes: Uint8Array): string | null {

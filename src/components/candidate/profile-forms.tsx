@@ -9,7 +9,7 @@ import {
   deleteFileAction, updateAvailabilityAction, updatePreferencesAction, updateProfileInfoAction, updateSkillsAction, uploadFileAction,
 } from "@/lib/candidate/actions";
 import { initialActionState, type ActionState } from "@/lib/validation/common";
-import { FILE_RULES, type FileKind } from "@/lib/validation/profile";
+import { FILE_RULES, type CandidateFileKind } from "@/lib/validation/profile";
 import { CONTRACT_TYPES, RADIUS_OPTIONS, SCHEDULES, SECTORS, WORK_TIMES } from "@/lib/config/taxonomy";
 import type { Profile } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
@@ -67,7 +67,7 @@ function FormFooter({ state, label = "Enregistrer" }: { state: ActionState; labe
 }
 
 /** Téléversement immédiat à la sélection du fichier. Contrôles définitifs côté serveur. */
-export function FileUpload({ kind, current }: { kind: FileKind; current: { name: string | null; url: string | null; updatedAt?: string | null } }) {
+export function FileUpload({ kind, current }: { kind: CandidateFileKind; current: { name: string | null; url: string | null; updatedAt?: string | null } }) {
   const upload = uploadFileAction.bind(null, kind);
   const [state, action, pending] = useActionState(upload, initialActionState);
   const [deleteState, setDeleteState] = useState<ActionState>({});

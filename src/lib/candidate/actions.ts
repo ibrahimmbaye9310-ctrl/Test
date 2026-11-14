@@ -7,7 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireUser } from "@/lib/auth/session";
 import { echo, fieldErrorsOf, type ActionState } from "@/lib/validation/common";
 import {
-  FILE_RULES, applicationSchema, availabilitySchema, preferencesSchema, profileInfoSchema, skillsSchema, validateUpload, type FileKind,
+  FILE_RULES, applicationSchema, availabilitySchema, preferencesSchema, profileInfoSchema, skillsSchema, validateUpload, type CandidateFileKind,
 } from "@/lib/validation/profile";
 
 const SAVED: ActionState = { ok: true, message: "Modifications enregistrées." };
@@ -82,8 +82,9 @@ export async function updatePreferencesAction(_: ActionState, fd: FormData): Pro
 }
 
 /** Téléversement du CV ou de la photo : taille, type déclaré et signature binaire vérifiés avant stockage. */
-export async function uploadFileAction(kind: FileKind, _: ActionState, fd: FormData): Promise<ActionState> {
+export async function uploadFileAction(kind: CandidateFileKind, _: ActionState, fd: FormData): Promise<ActionState> {
   const user = await candidate();
+  if (kind !== "cv" && kind !== "avatar") return { error: "Type de fichier inconnu." };
   const file = fd.get("file");
   if (!(file instanceof File)) return { error: "Aucun fichier reçu." };
   const head = new Uint8Array(await file.slice(0, 16).arrayBuffer());
@@ -113,7 +114,7 @@ export async function uploadFileAction(kind: FileKind, _: ActionState, fd: FormD
   return { ok: true, message: kind === "cv" ? "CV enregistré." : "Photo enregistrée." };
 }
 
-export async function deleteFileAction(kind: FileKind): Promise<ActionState> {
+export async function deleteFileAction(kind: CandidateFileKind): Promise<ActionState> {
   const user = await candidate();
   const path = kind === "cv" ? user.profile.cv_path : user.profile.avatar_path;
   if (!path) return {};
@@ -178,7 +179,7 @@ export async function deleteAccountAction(_: ActionState, fd: FormData): Promise
   } catch {
     return { error: "Suppression momentanément indisponible. Écrivez-nous pour la demander." };
   }
-  for (const bucket of ["avatars", "cvs"] as const) {
+  for (const bucket of ["avatars", "cvs", "logos"] as const) {
     const { data: files } = await admin.storage.from(bucket).list(user.id, { limit: 1000 });
     if (files?.length) await admin.storage.from(bucket).remove(files.map((f) => `${user.id}/${f.name}`));
   }

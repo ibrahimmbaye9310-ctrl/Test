@@ -13,7 +13,11 @@ export type ActionState = {
 /** Recopie les champs texte d'un formulaire (sauf mots de passe) pour les réafficher. */
 export function echo(fd: FormData, exclude: string[] = ["password", "confirm"]): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const [k, v] of fd.entries()) if (typeof v === "string" && !exclude.includes(k) && !k.startsWith("$ACTION")) out[k] = v.slice(0, 3000);
+  for (const [k, v] of fd.entries()) {
+    if (typeof v !== "string" || exclude.includes(k) || k.startsWith("$ACTION")) continue;
+    // Champs à choix multiples (cases à cocher de même nom) : valeurs jointes par des virgules.
+    out[k] = k in out ? `${out[k]},${v.slice(0, 3000)}` : v.slice(0, 3000);
+  }
   return out;
 }
 

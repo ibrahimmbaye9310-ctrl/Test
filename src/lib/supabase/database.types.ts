@@ -101,6 +101,8 @@ type ApplicationRow = {
   updated_at: string;
 };
 
+type OfferDailyViewsRow = { job_offer_id: string; day: string; views: number };
+
 type SavedJobRow = { candidate_id: string; job_offer_id: string; created_at: string };
 
 type PublicJobOfferRow = JobOfferRow & { company_name: string; company_description: string | null; company_logo_path: string | null };
@@ -153,6 +155,12 @@ export type Database = {
           Rel & { foreignKeyName: "saved_jobs_candidate_id_fkey"; columns: ["candidate_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
       };
+      offer_daily_views: {
+        Row: OfferDailyViewsRow;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
     };
     Views: {
       public_job_offers: { Row: PublicJobOfferRow; Relationships: [] };
@@ -160,6 +168,7 @@ export type Database = {
     Functions: {
       current_user_role: { Args: Record<string, never>; Returns: UserRole };
       is_admin: { Args: Record<string, never>; Returns: boolean };
+      record_offer_view: { Args: { offer: string }; Returns: undefined };
     };
     Enums: {
       user_role: UserRole;
@@ -178,5 +187,7 @@ export type Database = {
 
 export type Tables<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Row"];
 export type Profile = ProfileRow;
+export type Company = CompanyRow;
+export type JobOfferRecord = JobOfferRow;
 export type PublicJobOffer = PublicJobOfferRow;
 export type ApplicationStatusValue = ApplicationStatus;

@@ -145,6 +145,41 @@ select t.count_is('candidat : voit encore l''offre fermée à laquelle il a post
 select t.denied('candidat : retire une candidature en entretien', 'delete from public.applications');
 reset role;
 
+-- ═══ Migration 2 : règles de publication, vues, logos ═══
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+select t.denied('recruteur : se met « à la une » lui-même', $$update public.job_offers set is_featured = true where id = '20000000-0000-0000-0000-000000000002'$$);
+select t.denied('recruteur : gonfle le compteur de vues', $$update public.job_offers set views_count = 999 where id = '20000000-0000-0000-0000-000000000002'$$);
+select t.denied('recruteur : statut « pending » réservé', $$update public.job_offers set status = 'pending' where id = '20000000-0000-0000-0000-000000000002'$$);
+select t.denied('recruteur : identifiant « -demo- »', $$insert into public.job_offers (company_id, title, slug, short_description, contract_type, work_time, sector, city, postal_code)
+  values ('10000000-0000-0000-0000-000000000001', 'Faux', 'faux-demo-1', 'Une description suffisamment longue.', 'cdi', 'full_time', 'retail', 'Paris', '75001')$$);
+select t.allowed('recruteur : publie son brouillon', $$update public.job_offers set status = 'published', published_at = '2000-01-01', expires_at = '2000-02-01' where id = '20000000-0000-0000-0000-000000000002'$$);
+select t.count_is('publication : dates fixées par la base (pas par le client)', $$select 1 from public.job_offers where id = '20000000-0000-0000-0000-000000000002' and published_at > now() - interval '1 minute' and expires_at > now() + interval '29 days'$$, 1);
+select t.count_is('insertion publiée : jamais « à la une »', $$select 1 from public.job_offers where is_featured$$, 0);
+select t.allowed('recruteur : dépose son logo', $$insert into storage.objects (bucket_id, name) values ('logos', auth.uid() || '/logo.png')$$);
+select t.denied('recruteur : logo dans le dossier d''un autre', $$insert into storage.objects (bucket_id, name) values ('logos', '00000000-0000-0000-0000-00000000000d/logo.png')$$);
+select t.allowed('recruteur : enregistre le chemin de son logo', $$update public.companies set logo_path = auth.uid() || '/logo.png' where owner_id = auth.uid()$$);
+select t.denied('recruteur : chemin de logo d''un autre', $$update public.companies set logo_path = '00000000-0000-0000-0000-00000000000d/logo.png' where owner_id = auth.uid()$$);
+select public.record_offer_view('20000000-0000-0000-0000-000000000002');
+select t.count_is('vue par le propriétaire : non comptée', $$select 1 from public.job_offers where id = '20000000-0000-0000-0000-000000000002' and views_count = 0$$, 1);
+reset role;
+
+set role anon; set request.jwt.claim.sub = '';
+select public.record_offer_view('20000000-0000-0000-0000-000000000002');
+select public.record_offer_view('20000000-0000-0000-0000-000000000002');
+select public.record_offer_view('20000000-0000-0000-0000-000000000001'); -- offre fermée : ignorée
+select t.denied('anonyme : écrit directement les statistiques', $$insert into public.offer_daily_views (job_offer_id, views) values ('20000000-0000-0000-0000-000000000002', 100)$$);
+select t.count_is('anonyme : ne lit pas les statistiques', 'select * from public.offer_daily_views', 0);
+select t.denied('anonyme : dépose un logo', $$insert into storage.objects (bucket_id, name) values ('logos', 'x/logo.png')$$);
+reset role;
+
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+select t.count_is('statistiques : 2 vues visiteurs comptées', $$select 1 from public.offer_daily_views where job_offer_id = '20000000-0000-0000-0000-000000000002' and views = 2$$, 1);
+select t.count_is('compteur global à jour', $$select 1 from public.job_offers where id = '20000000-0000-0000-0000-000000000002' and views_count = 2$$, 1);
+reset role;
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000d';
+select t.count_is('recruteur B : ne lit pas les statistiques d''ACME', 'select * from public.offer_daily_views', 0);
+reset role;
+
 -- ── Suppression de compte : tout part en cascade
 delete from auth.users where id = '00000000-0000-0000-0000-00000000000a';
 select t.count_is('suppression : profil, candidatures et favoris effacés',

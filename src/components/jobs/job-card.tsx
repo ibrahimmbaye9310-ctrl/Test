@@ -13,7 +13,7 @@ export function JobCard({ offer, className, distanceKm }: { offer: JobOfferSumma
   return (
     <Card interactive className={cn("group relative flex flex-col p-5", className)}>
       <div className="flex items-start gap-3.5">
-        <CompanyAvatar name={offer.companyName} />
+        <CompanyAvatar name={offer.companyName} logoUrl={offer.companyLogoUrl} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <p className="truncate text-sm text-ink-muted">{offer.companyName}</p>

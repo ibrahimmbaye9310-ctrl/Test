@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { after } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import {
   Briefcase, Building2, CalendarDays, CalendarRange, Check, Clock, FlaskConical, GraduationCap, Laptop, MapPin, Sparkles, Timer, Wallet,
 } from "lucide-react";
@@ -48,6 +50,16 @@ export default async function OfferPage({ params }: Props) {
   const user = offer.isDemo ? null : await getCurrentUser();
   const interaction = user?.profile.role === "candidate" ? await getOfferInteraction(user.id, offer.id) : null;
   const loginHref = `/connexion?suite=${encodeURIComponent(`/offres/${offer.slug}`)}`;
+  if (!offer.isDemo) {
+    // Statistique de vues, enregistrée après l'envoi de la page (n'allonge pas le temps de réponse).
+    // La base ignore les vues du recruteur propriétaire et les offres non publiées.
+    // Le client est créé avant after() : les cookies ne sont plus lisibles une fois la réponse envoyée.
+    const supabase = await createClient();
+    await supabase.auth.getSession(); // lit la session maintenant (cookies)
+    after(async () => {
+      await supabase.rpc("record_offer_view", { offer: offer.id });
+    });
+  }
 
   const facts = [
     { icon: Briefcase, label: "Contrat", value: labelOf(CONTRACT_TYPES, offer.contractType) },
@@ -83,7 +95,7 @@ export default async function OfferPage({ params }: Props) {
         <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_340px]">
           <article className="min-w-0">
             <header className="flex flex-col gap-5 sm:flex-row sm:items-start">
-              <CompanyAvatar name={offer.companyName} className="size-14 text-base" />
+              <CompanyAvatar name={offer.companyName} logoUrl={offer.companyLogoUrl} className="size-14 text-base" />
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-ink-muted">{offer.companyName}</p>
