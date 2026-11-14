@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/input";
 import { FormMessage } from "@/components/forms/form-feedback";
 import type { ActionState } from "@/lib/validation/common";
 import {
-  deleteOfferAdminAction, deleteTestimonialAction, deleteUserAction, handleReportAction, moderateOfferAction,
+  deleteOfferAdminAction, grantOfferCreditAction, deleteTestimonialAction, deleteUserAction, handleReportAction, moderateOfferAction,
   setCompanyVerifiedAction, setSuspensionAction, setTestimonialPublishedAction,
 } from "@/lib/admin/actions";
 
@@ -59,8 +59,11 @@ export function ModerateOfferButtons({ offerId, status }: { offerId: string; sta
 
 export function CompanyVerifyButton({ companyId, verified }: { companyId: string; verified: boolean }) {
   const { pending, state, run } = useRun();
+  const gift = useRun();
   return (
-    <div className="space-y-1">
+    <div className="flex flex-col items-end gap-1">
+      <Button size="sm" variant="ghost" loading={gift.pending} onClick={() => gift.run(() => grantOfferCreditAction(companyId))}>Offrir une annonce</Button>
+      {gift.state.message && <p role="status" className="text-xs text-success-600">{gift.state.message}</p>}
       <Button size="sm" variant={verified ? "ghost" : "secondary"} loading={pending} onClick={() => run(() => setCompanyVerifiedAction(companyId, !verified))}>
         {verified ? "Retirer la vérification" : "Vérifier"}
       </Button>

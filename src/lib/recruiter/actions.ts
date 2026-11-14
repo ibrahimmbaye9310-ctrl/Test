@@ -14,6 +14,11 @@ import { getMyCompany } from "./queries";
 import { TOO_MANY, allow } from "@/lib/security/rate-limit";
 
 const FAILED: ActionState = { error: "L'enregistrement a échoué. Réessayez." };
+/** Limite d'annonces atteinte (contrôlée par la base). */
+const QUOTA: ActionState = {
+  error: "Limite d'annonces actives atteinte. Fermez une annonce, passez à la formule supérieure ou achetez une annonce à l'unité (page Abonnement).",
+};
+const isQuota = (e: { message?: string } | null) => Boolean(e?.message?.includes("QUOTA_ATTEINT"));
 const isUuid = (v: unknown): v is string => typeof v === "string" && /^[0-9a-f-]{36}$/i.test(v);
 
 async function recruiterWithCompany() {
@@ -155,6 +160,7 @@ export async function saveOfferAction(offerId: string | null, _: ActionState, fd
     if (!isUuid(offerId)) return FAILED;
     const update = d.intent === "publish" ? { ...row, status: "published" as const } : row;
     const { data, error } = await supabase.from("job_offers").update(update).eq("id", offerId).eq("company_id", company.id).select("id, status");
+    if (isQuota(error)) return { ...QUOTA, values };
     if (error || !data?.length) return { ...FAILED, values };
     refresh();
     redirect(`/recruteur/offres/${offerId}?${data[0]!.status === "pending" ? "verification" : "enregistree"}=1`);
@@ -166,6 +172,7 @@ export async function saveOfferAction(offerId: string | null, _: ActionState, fd
     .insert({ ...row, company_id: company.id, slug, status: d.intent === "publish" ? "published" : "draft" })
     .select("id, status")
     .single();
+  if (isQuota(error)) return { ...QUOTA, values };
   if (error || !data) {
     console.error("[saveOffer]", error?.message);
     return { ...FAILED, values };
@@ -180,6 +187,7 @@ export async function setOfferStatusAction(offerId: string, status: "published" 
   if (!isUuid(offerId) || !["published", "closed", "draft"].includes(status)) return FAILED;
   const supabase = await createClient();
   const { data, error } = await supabase.from("job_offers").update({ status }).eq("id", offerId).eq("company_id", company.id).select("id, status");
+  if (isQuota(error)) return QUOTA;
   if (error || !data?.length) return { error: error?.message.includes("modération") ? "Cette offre a été refusée par la modération." : FAILED.error };
   refresh();
   const final = data[0]!.status;

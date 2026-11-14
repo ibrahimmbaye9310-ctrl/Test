@@ -202,6 +202,12 @@ export type Database = {
         Update: Partial<TestimonialRow>;
         Relationships: [];
       };
+      offer_credits: {
+        Row: { id: string; company_id: string; source: "stripe" | "admin"; stripe_reference: string | null; used_offer_id: string | null; used_at: string | null; valid_until: string | null; note: string | null; created_at: string };
+        Insert: { company_id: string; source: "stripe" | "admin"; note?: string | null };
+        Update: never;
+        Relationships: [];
+      };
       admin_audit_log: { Row: AuditRow; Insert: Insertable<Omit<AuditRow, "id">, "admin_id" | "action" | "target_type" | "target_id">; Update: never; Relationships: [] };
       offer_daily_views: {
         Row: OfferDailyViewsRow;
@@ -220,6 +226,15 @@ export type Database = {
       admin_stats: { Args: Record<string, never>; Returns: AdminStats };
       admin_list_users: { Args: { search?: string | null; role_filter?: string | null; max_rows?: number; skip?: number }; Returns: AdminUserRow[] };
       admin_set_suspension: { Args: { target: string; suspend: boolean; reason?: string | null }; Returns: undefined };
+      my_billing_summary: { Args: Record<string, never>; Returns: { plan: "starter" | "pro" | null; limit: number; active_offers: number; credits_available: number; credits_in_use: number } | null };
+      billing_event_first_seen: { Args: { event_id: string; event_type: string }; Returns: boolean };
+      billing_event_forget: { Args: { event_id: string }; Returns: undefined };
+      billing_link_customer: { Args: { company: string; customer: string }; Returns: undefined };
+      billing_sync_subscription: { Args: { customer: string; subscription: string; new_plan: string; new_status: string; period_end: string; cancel_at_end: boolean }; Returns: string };
+      billing_record_payment: { Args: { company: string; payment_kind: string; reference: string; amount: number; cur: string; payment_status: string; label: string }; Returns: undefined };
+      billing_grant_credit: { Args: { company: string; reference: string }; Returns: undefined };
+      billing_notify: { Args: { company: string; kind: string; title: string; body: string }; Returns: undefined };
+      billing_company_of: { Args: { customer: string }; Returns: string | null };
       check_rate_limit: { Args: { bucket_key: string; max_hits: number; window_seconds: number }; Returns: boolean };
     };
     Enums: {

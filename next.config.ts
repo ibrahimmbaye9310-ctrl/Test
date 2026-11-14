@@ -15,7 +15,8 @@ const csp = [
   "font-src 'self' data:",
   `connect-src 'self' ${supabase} ${supabase.replace("https://", "wss://")}`,
   "frame-ancestors 'none'",
-  "form-action 'self'",
+  // Redirections vers les pages de paiement et de gestion hébergées par Stripe.
+  "form-action 'self' https://checkout.stripe.com https://billing.stripe.com",
   "base-uri 'self'",
   "object-src 'none'",
   ...(isDev ? [] : ["upgrade-insecure-requests"]),

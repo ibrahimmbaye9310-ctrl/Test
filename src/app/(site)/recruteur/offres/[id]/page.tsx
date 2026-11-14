@@ -12,6 +12,8 @@ import { Callout, EmptyState } from "@/components/ui/misc";
 import { OfferActions } from "@/components/recruiter/offer-actions";
 import { ViewsChart } from "@/components/recruiter/views-chart";
 import { ApplicationList } from "@/components/recruiter/application-list";
+import { ButtonLink } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Offre" };
 const dateFmt = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" });
@@ -24,7 +26,14 @@ export default async function RecruiterOfferPage({ params, searchParams }: Props
   const { company } = await requireCompany(`/recruteur/offres/${id}`);
   const offer = await getMyOffer(company.id, id);
   if (!offer) notFound();
-  const [views, applications] = await Promise.all([getOfferViews(offer.id), getReceivedApplications(company.id, { offerId: offer.id })]);
+  const supabase = await createClient();
+  const [views, applications, { data: billing }] = await Promise.all([
+    getOfferViews(offer.id),
+    getReceivedApplications(company.id, { offerId: offer.id }),
+    supabase.rpc("my_billing_summary"),
+  ]);
+  // Statistiques avancées (historique des vues, taux de candidature) : formule Pro.
+  const advanced = billing?.plan === "pro";
   const st = displayOfferStatus(offer.status, offer.expires_at);
   const expired = st.label === "Expirée";
   const views30 = views.reduce((s, d) => s + d.views, 0);
@@ -64,16 +73,26 @@ export default async function RecruiterOfferPage({ params, searchParams }: Props
 
       <div className="grid gap-4 sm:grid-cols-4">
         <Tile label="Vues totales" value={offer.views_count} />
-        <Tile label="Vues (30 jours)" value={views30} />
+        <Tile label="Vues (30 jours)" value={advanced ? views30 : "Pro"} />
         <Tile label="Candidatures" value={applications.length} />
-        <Tile label="Taux de candidature" value={rate == null ? "—" : `${rate.toLocaleString("fr-FR")} %`} />
+        <Tile label="Taux de candidature" value={!advanced ? "Pro" : rate == null ? "—" : `${rate.toLocaleString("fr-FR")} %`} />
       </div>
 
-      <Card className="p-5 sm:p-6">
-        <h2 className="font-semibold">Vues des 30 derniers jours</h2>
-        <p className="mb-4 text-xs text-ink-subtle">Vos propres consultations ne sont pas comptées.</p>
-        <ViewsChart data={views} />
-      </Card>
+      {advanced ? (
+        <Card className="p-5 sm:p-6">
+          <h2 className="font-semibold">Vues des 30 derniers jours</h2>
+          <p className="mb-4 text-xs text-ink-subtle">Vos propres consultations ne sont pas comptées.</p>
+          <ViewsChart data={views} />
+        </Card>
+      ) : (
+        <Card className="flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
+          <div>
+            <h2 className="font-semibold">Statistiques avancées</h2>
+            <p className="mt-1 text-sm text-ink-muted">Historique quotidien des vues et taux de candidature : inclus dans la formule Pro.</p>
+          </div>
+          <ButtonLink href="/recruteur/abonnement" variant="secondary">Découvrir Pro</ButtonLink>
+        </Card>
+      )}
 
       <section aria-labelledby="apps-title" className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">

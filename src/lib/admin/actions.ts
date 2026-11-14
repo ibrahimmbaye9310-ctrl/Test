@@ -159,3 +159,14 @@ export async function deleteTestimonialAction(id: string): Promise<ActionState> 
   revalidatePath("/", "layout");
   return { ok: true };
 }
+
+// ─── Gestes commerciaux ─────────────────────────────────────────────────────
+export async function grantOfferCreditAction(companyId: string): Promise<ActionState> {
+  const { user, supabase } = await admin();
+  if (!uuid.safeParse(companyId).success) return FAILED;
+  const { error } = await supabase.from("offer_credits").insert({ company_id: companyId, source: "admin", note: "Offert par l'administration" });
+  if (error) return FAILED;
+  await audit(supabase, user.id, "company.grant_credit", "company", companyId);
+  refresh();
+  return { ok: true, message: "1 annonce offerte (valable 30 jours après publication)." };
+}

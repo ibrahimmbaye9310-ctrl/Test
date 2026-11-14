@@ -8,7 +8,7 @@ const LABELS: Record<string, string> = {
   "offer.approve": "Offre validée", "offer.reject": "Offre refusée", "offer.close": "Offre retirée", "offer.delete": "Offre supprimée",
   "company.verify": "Entreprise vérifiée", "company.unverify": "Vérification retirée", "user.suspend": "Compte suspendu", "user.unsuspend": "Compte réactivé",
   "user.delete": "Compte supprimé", "report.reviewing": "Signalement pris en charge", "report.resolved": "Signalement traité", "report.dismissed": "Signalement sans suite",
-  "testimonial.create": "Avis ajouté", "testimonial.publish": "Avis publié", "testimonial.unpublish": "Avis dépublié", "testimonial.delete": "Avis supprimé",
+  "company.grant_credit": "Annonce offerte", "testimonial.create": "Avis ajouté", "testimonial.publish": "Avis publié", "testimonial.unpublish": "Avis dépublié", "testimonial.delete": "Avis supprimé",
 };
 
 export default async function AuditPage() {

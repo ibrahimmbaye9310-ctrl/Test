@@ -68,6 +68,9 @@ select t.allowed('recruteur : crée son entreprise', $$insert into public.compan
 reset role;
 -- ACME est une entreprise vérifiée (par l'administration) : ses offres sont publiées sans attente.
 update public.companies set is_verified = true where id = '10000000-0000-0000-0000-000000000001';
+-- ACME a souscrit la formule Pro (10 annonces, mise en avant).
+insert into public.subscriptions (company_id, stripe_customer_id, stripe_subscription_id, plan, status, current_period_end)
+  values ('10000000-0000-0000-0000-000000000001', 'cus_acme', 'sub_acme', 'pro', 'active', now() + interval '30 days');
 set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
 select t.denied('recruteur : 2e entreprise', $$insert into public.companies (owner_id, name, slug) values (auth.uid(), 'ACME 2', 'acme-2')$$);
 select t.allowed('recruteur : publie une offre', $$insert into public.job_offers (id, company_id, title, slug, short_description, contract_type, work_time, sector, city, postal_code, status, published_at)
@@ -158,7 +161,7 @@ select t.denied('recruteur : identifiant « -demo- »', $$insert into public.job
   values ('10000000-0000-0000-0000-000000000001', 'Faux', 'faux-demo-1', 'Une description suffisamment longue.', 'cdi', 'full_time', 'retail', 'Paris', '75001')$$);
 select t.allowed('recruteur : publie son brouillon', $$update public.job_offers set status = 'published', published_at = '2000-01-01', expires_at = '2000-02-01' where id = '20000000-0000-0000-0000-000000000002'$$);
 select t.count_is('publication : dates fixées par la base (pas par le client)', $$select 1 from public.job_offers where id = '20000000-0000-0000-0000-000000000002' and published_at > now() - interval '1 minute' and expires_at > now() + interval '29 days'$$, 1);
-select t.count_is('insertion publiée : jamais « à la une »', $$select 1 from public.job_offers where is_featured$$, 0);
+select t.count_is('formule Pro : offres publiées mises « à la une » automatiquement', $$select 1 from public.job_offers where is_featured and id = '20000000-0000-0000-0000-000000000002'$$, 1);
 select t.allowed('recruteur : dépose son logo', $$insert into storage.objects (bucket_id, name) values ('logos', auth.uid() || '/logo.png')$$);
 select t.denied('recruteur : logo dans le dossier d''un autre', $$insert into storage.objects (bucket_id, name) values ('logos', '00000000-0000-0000-0000-00000000000d/logo.png')$$);
 select t.allowed('recruteur : enregistre le chemin de son logo', $$update public.companies set logo_path = auth.uid() || '/logo.png' where owner_id = auth.uid()$$);
@@ -210,7 +213,6 @@ select t.count_is('recruteur : ne voit pas qui l''a signalé', 'select * from pu
 select t.denied('recruteur : s''attribue un abonnement', $$insert into public.subscriptions (company_id, stripe_customer_id, plan, status) values ('10000000-0000-0000-0000-000000000001', 'cus_x', 'pro', 'active')$$);
 select t.denied('recruteur : enregistre un faux paiement', $$insert into public.payments (company_id, kind, stripe_reference, amount_cents, status) values ('10000000-0000-0000-0000-000000000001', 'subscription', 'in_x', 5900, 'succeeded')$$);
 reset role;
-insert into public.subscriptions (company_id, stripe_customer_id, plan, status) values ('10000000-0000-0000-0000-000000000001', 'cus_test', 'pro', 'active');
 set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
 select t.count_is('recruteur : lit son abonnement', 'select * from public.subscriptions', 1);
 reset role;
@@ -230,6 +232,9 @@ update public.profiles set role = 'admin' where id = '00000000-0000-0000-0000-00
 -- Denis (non vérifié) crée son entreprise et publie : l'offre part en vérification.
 set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000d';
 select t.allowed('recruteur B : crée son entreprise', $$insert into public.companies (id, owner_id, name, slug, is_verified) values ('10000000-0000-0000-0000-000000000002', auth.uid(), 'Autre', 'autre', true)$$);
+reset role;
+insert into public.subscriptions (company_id, stripe_customer_id, plan, status, current_period_end) values ('10000000-0000-0000-0000-000000000002', 'cus_autre', 'starter', 'active', now() + interval '30 days');
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000d';
 select t.count_is('création : « vérifiée » forcé à faux', $$select 1 from public.companies where id = '10000000-0000-0000-0000-000000000002' and not is_verified$$, 1);
 select t.denied('recruteur : se déclare « vérifié »', $$update public.companies set is_verified = true where id = '10000000-0000-0000-0000-000000000002'$$);
 select t.allowed('recruteur non vérifié : demande la publication', $$insert into public.job_offers (id, company_id, title, slug, short_description, contract_type, work_time, sector, city, postal_code, status)
@@ -280,6 +285,83 @@ select t.count_is('suspension : offres retirées', $$select 1 from public.job_of
 set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000d';
 select t.denied('suspendu : publie une offre', $$insert into public.job_offers (company_id, title, slug, short_description, contract_type, work_time, sector, city, postal_code) values ('10000000-0000-0000-0000-000000000002', 'Encore', 'encore', 'Une description suffisamment longue.', 'cdi', 'full_time', 'retail', 'Paris', '75001')$$);
 select t.denied('suspendu : lève sa suspension', $$update public.profiles set suspended_at = null where id = auth.uid()$$);
+reset role;
+
+-- ═══ Migration 5 : limites d'annonces, crédits, facturation ═══
+-- Nouvelle entreprise sans formule : Eva
+insert into auth.users (id, email, raw_user_meta_data) values ('00000000-0000-0000-0000-00000000000e', 'eva@test.fr', '{"full_name":"Eva","role":"recruiter"}');
+insert into public.companies (id, owner_id, name, slug, is_verified) values ('10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-00000000000e', 'Eva SARL', 'eva', false);
+update public.companies set is_verified = true where id = '10000000-0000-0000-0000-000000000003';
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000e';
+select t.allowed('sans formule : brouillon autorisé', $$insert into public.job_offers (id, company_id, title, slug, short_description, contract_type, work_time, sector, city, postal_code) values ('30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000003', 'Offre 1', 'eva-1', 'Une description suffisamment longue.', 'cdi', 'full_time', 'retail', 'Paris', '75001')$$);
+select t.denied('sans formule ni crédit : publication refusée', $$update public.job_offers set status = 'published' where id = '30000000-0000-0000-0000-000000000001'$$);
+select t.denied('recruteur : s''offre un crédit', $$insert into public.offer_credits (company_id, source) values ('10000000-0000-0000-0000-000000000003', 'admin')$$);
+select t.denied('recruteur : appelle la facturation sans clé', $$select public.billing_grant_credit('10000000-0000-0000-0000-000000000003', 'cs_pirate')$$);
+select t.denied('recruteur : fausse clé de facturation', $$select set_config('request.headers', '{"x-billing-key":"0000000000000000000000000000000000000000"}', true), public.billing_grant_credit('10000000-0000-0000-0000-000000000003', 'cs_pirate2')$$);
+reset role;
+
+-- Le webhook (clé de facturation valide) enregistre l'achat d'une annonce à l'unité.
+select value as billing_key from private.settings where key = 'billing_key' \gset
+set role anon; set request.jwt.claim.sub = '';
+select set_config('request.headers', json_build_object('x-billing-key', :'billing_key')::text, false);
+select t.count_is('webhook : événement nouveau', $$select 1 where public.billing_event_first_seen('evt_1', 'checkout.session.completed')$$, 1);
+select t.count_is('webhook : événement rejoué ignoré', $$select 1 where not public.billing_event_first_seen('evt_1', 'checkout.session.completed')$$, 1);
+select public.billing_link_customer('10000000-0000-0000-0000-000000000003', 'cus_eva');
+select public.billing_grant_credit('10000000-0000-0000-0000-000000000003', 'cs_unite_1');
+select public.billing_grant_credit('10000000-0000-0000-0000-000000000003', 'cs_unite_1');
+select public.billing_record_payment('10000000-0000-0000-0000-000000000003', 'single_offer', 'cs_unite_1', 990, 'EUR', 'succeeded', 'Annonce à l''unité');
+select set_config('request.headers', '{}', false);
+reset role;
+select t.count_is('crédit accordé une seule fois (idempotence)', $$select 1 from public.offer_credits where company_id = '10000000-0000-0000-0000-000000000003'$$, 1);
+
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000e';
+select t.allowed('avec un crédit : publication autorisée', $$update public.job_offers set status = 'published' where id = '30000000-0000-0000-0000-000000000001'$$);
+select t.count_is('crédit consommé et rattaché à l''offre (30 jours)', $$select 1 from public.offer_credits where used_offer_id = '30000000-0000-0000-0000-000000000001' and valid_until > now() + interval '29 days'$$, 1);
+select t.allowed('fermer puis republier dans les 30 jours : sans nouveau crédit', $$update public.job_offers set status = 'closed' where id = '30000000-0000-0000-0000-000000000001'$$);
+select t.allowed('republication couverte par le crédit', $$update public.job_offers set status = 'published' where id = '30000000-0000-0000-0000-000000000001'$$);
+select t.denied('2e offre sans crédit : refusée', $$insert into public.job_offers (company_id, title, slug, short_description, contract_type, work_time, sector, city, postal_code, status) values ('10000000-0000-0000-0000-000000000003', 'Offre 2', 'eva-2', 'Une description suffisamment longue.', 'cdi', 'full_time', 'retail', 'Paris', '75001', 'published')$$);
+select t.count_is('résumé de facturation', $$select 1 from (select public.my_billing_summary() s) x where (s->>'active_offers')::int = 1 and (s->>'credits_available')::int = 0 and (s->>'limit')::int = 0$$, 1);
+select t.count_is('paiement visible par le recruteur', 'select * from public.payments', 1);
+reset role;
+
+-- Abonnement Starter (3 annonces) via le webhook
+set role anon; set request.jwt.claim.sub = '';
+select set_config('request.headers', json_build_object('x-billing-key', :'billing_key')::text, false);
+select public.billing_sync_subscription('cus_eva', 'sub_eva', 'starter', 'active', now() + interval '30 days', false);
+select set_config('request.headers', '{}', false);
+reset role;
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000e';
+select t.allowed('Starter : 2e offre', $$insert into public.job_offers (company_id, title, slug, short_description, contract_type, work_time, sector, city, postal_code, status) values ('10000000-0000-0000-0000-000000000003', 'Offre 2', 'eva-2', 'Une description suffisamment longue.', 'cdi', 'full_time', 'retail', 'Paris', '75001', 'published')$$);
+select t.allowed('Starter : 3e offre', $$insert into public.job_offers (company_id, title, slug, short_description, contract_type, work_time, sector, city, postal_code, status) values ('10000000-0000-0000-0000-000000000003', 'Offre 3', 'eva-3', 'Une description suffisamment longue.', 'cdi', 'full_time', 'retail', 'Paris', '75001', 'published')$$);
+select t.allowed('Starter : 4e offre (3 + 1 crédit en cours)', $$insert into public.job_offers (company_id, title, slug, short_description, contract_type, work_time, sector, city, postal_code, status) values ('10000000-0000-0000-0000-000000000003', 'Offre 4', 'eva-4', 'Une description suffisamment longue.', 'cdi', 'full_time', 'retail', 'Paris', '75001', 'published')$$);
+select t.denied('Starter : 5e offre refusée', $$insert into public.job_offers (company_id, title, slug, short_description, contract_type, work_time, sector, city, postal_code, status) values ('10000000-0000-0000-0000-000000000003', 'Offre 5', 'eva-5', 'Une description suffisamment longue.', 'cdi', 'full_time', 'retail', 'Paris', '75001', 'published')$$);
+select t.allowed('Starter : brouillon toujours possible', $$insert into public.job_offers (company_id, title, slug, short_description, contract_type, work_time, sector, city, postal_code) values ('10000000-0000-0000-0000-000000000003', 'Offre 5', 'eva-5', 'Une description suffisamment longue.', 'cdi', 'full_time', 'retail', 'Paris', '75001')$$);
+select t.count_is('Starter : pas de mise en avant', $$select 1 from public.job_offers where company_id = '10000000-0000-0000-0000-000000000003' and is_featured$$, 0);
+reset role;
+
+-- Passage en Pro puis résiliation effective
+set role anon; set request.jwt.claim.sub = '';
+select set_config('request.headers', json_build_object('x-billing-key', :'billing_key')::text, false);
+select public.billing_sync_subscription('cus_eva', 'sub_eva', 'pro', 'active', now() + interval '30 days', false);
+select set_config('request.headers', '{}', false);
+reset role;
+select t.count_is('passage en Pro : offres en ligne mises en avant', $$select 1 from public.job_offers where company_id = '10000000-0000-0000-0000-000000000003' and status = 'published' and is_featured$$, 4);
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000e';
+select t.allowed('Pro : 5e offre autorisée', $$update public.job_offers set status = 'published' where slug = 'eva-5'$$);
+reset role;
+set role anon; set request.jwt.claim.sub = '';
+select set_config('request.headers', json_build_object('x-billing-key', :'billing_key')::text, false);
+select public.billing_sync_subscription('cus_eva', 'sub_eva', 'pro', 'canceled', now() - interval '10 days', false);
+select set_config('request.headers', '{}', false);
+reset role;
+select t.count_is('résiliation : mise en avant retirée', $$select 1 from public.job_offers where company_id = '10000000-0000-0000-0000-000000000003' and is_featured$$, 0);
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000e';
+select t.count_is('résiliation : plus de formule active', $$select 1 from (select public.my_billing_summary() s) x where s->>'plan' is null$$, 1);
+select t.denied('recruteur : lit les événements Stripe', 'delete from public.stripe_events');
+select t.denied('recruteur : lit la clé de facturation', 'select value from private.settings');
+reset role;
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000ad';
+select t.allowed('admin : offre un crédit (geste commercial)', $$insert into public.offer_credits (company_id, source, note) values ('10000000-0000-0000-0000-000000000003', 'admin', 'Geste commercial')$$);
 reset role;
 
 -- ── Suppression de compte : tout part en cascade
