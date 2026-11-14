@@ -13,7 +13,7 @@ if (!key) {
   console.error("Définissez STRIPE_SECRET_KEY (clé secrète Stripe, sk_test_… pour le mode test).");
   process.exit(1);
 }
-const stripe = new Stripe(key);
+const stripe = new Stripe(key, { httpClient: Stripe.createFetchHttpClient() });
 const live = key.startsWith("sk_live_");
 console.log(`Mode ${live ? "PRODUCTION (live)" : "TEST"}\n`);
 

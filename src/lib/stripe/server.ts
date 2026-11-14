@@ -10,7 +10,8 @@ export const isStripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
 let client: Stripe | null = null;
 export function stripe() {
   if (!process.env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY manquante.");
-  client ??= new Stripe(process.env.STRIPE_SECRET_KEY, { appInfo: { name: "JobFinder" }, maxNetworkRetries: 2 });
+  // Client HTTP basé sur fetch : compatible avec tous les environnements (Vercel, proxys d'entreprise).
+  client ??= new Stripe(process.env.STRIPE_SECRET_KEY, { appInfo: { name: "JobFinder" }, maxNetworkRetries: 2, httpClient: Stripe.createFetchHttpClient() });
   return client;
 }
 
