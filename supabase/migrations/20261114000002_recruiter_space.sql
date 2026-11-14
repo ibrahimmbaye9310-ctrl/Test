@@ -1,12 +1,18 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 -- JobFinder — Migration 2 : espace recruteur
 -- Logos d'entreprise, règles de publication des offres, statistiques de vues.
+-- Ré-exécutable sans erreur (chaque objet est supprimé s'il existe avant d'être recréé).
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- ─── Offres : règles appliquées par la base, quel que soit le client ─────────
 -- Les identifiants des offres de démonstration contiennent « -demo- » : interdit pour les vraies offres.
+alter table public.job_offers drop constraint if exists job_offers_slug_not_demo;
 alter table public.job_offers add constraint job_offers_slug_not_demo check (slug not like '%-demo-%');
 -- Une offre publiée a toujours une date d'expiration (30 jours par défaut).
+-- Les offres déjà publiées sans date en reçoivent une : 30 jours après leur publication.
+update public.job_offers set expires_at = coalesce(published_at, created_at) + interval '30 days'
+  where status = 'published' and expires_at is null;
+alter table public.job_offers drop constraint if exists job_offers_expiry;
 alter table public.job_offers add constraint job_offers_expiry check (status <> 'published' or expires_at is not null);
 
 create or replace function public.guard_job_offer()
@@ -42,16 +48,18 @@ begin
   end if;
   return new;
 end $$;
+drop trigger if exists job_offers_guard on public.job_offers;
 create trigger job_offers_guard before insert or update on public.job_offers for each row execute function public.guard_job_offer();
 
 -- ─── Statistiques de vues par jour ─────────────────────────────────────────
-create table public.offer_daily_views (
+create table if not exists public.offer_daily_views (
   job_offer_id uuid not null references public.job_offers (id) on delete cascade,
   day date not null default current_date,
   views integer not null default 0 check (views >= 0),
   primary key (job_offer_id, day)
 );
 alter table public.offer_daily_views enable row level security;
+drop policy if exists "offer_daily_views: lecture par le propriétaire" on public.offer_daily_views;
 create policy "offer_daily_views: lecture par le propriétaire" on public.offer_daily_views for select to authenticated
   using (public.owns_offer(job_offer_id) or public.is_admin());
 -- Aucune écriture directe : uniquement via record_offer_view().
@@ -75,13 +83,18 @@ insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 on conflict (id) do nothing;
 
 -- Rangement : logos/<id du recruteur>/<fichier>. Lecture publique via l'URL du bucket public.
+drop policy if exists "logos: le recruteur dépose le sien" on storage.objects;
 create policy "logos: le recruteur dépose le sien" on storage.objects for insert to authenticated
   with check (bucket_id = 'logos' and (storage.foldername(name))[1] = (select auth.uid())::text and public.current_user_role() = 'recruiter');
+drop policy if exists "logos: le recruteur remplace le sien" on storage.objects;
 create policy "logos: le recruteur remplace le sien" on storage.objects for update to authenticated
   using (bucket_id = 'logos' and (storage.foldername(name))[1] = (select auth.uid())::text);
+drop policy if exists "logos: le recruteur supprime le sien" on storage.objects;
 create policy "logos: le recruteur supprime le sien" on storage.objects for delete to authenticated
   using (bucket_id = 'logos' and (storage.foldername(name))[1] = (select auth.uid())::text);
+drop policy if exists "logos: le recruteur liste les siens" on storage.objects;
 create policy "logos: le recruteur liste les siens" on storage.objects for select to authenticated
   using (bucket_id = 'logos' and (storage.foldername(name))[1] = (select auth.uid())::text);
 
+alter table public.companies drop constraint if exists companies_logo_path_owner;
 alter table public.companies add constraint companies_logo_path_owner check (logo_path is null or logo_path like owner_id::text || '/%');
