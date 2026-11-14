@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireUser } from "@/lib/auth/session";
+import { TOO_MANY, allow } from "@/lib/security/rate-limit";
 import { echo, fieldErrorsOf, type ActionState } from "@/lib/validation/common";
 import {
   FILE_RULES, applicationSchema, availabilitySchema, preferencesSchema, profileInfoSchema, skillsSchema, validateUpload, type CandidateFileKind,
@@ -85,6 +86,7 @@ export async function updatePreferencesAction(_: ActionState, fd: FormData): Pro
 export async function uploadFileAction(kind: CandidateFileKind, _: ActionState, fd: FormData): Promise<ActionState> {
   const user = await candidate();
   if (kind !== "cv" && kind !== "avatar") return { error: "Type de fichier inconnu." };
+  if (!(await allow("upload", user.id))) return { error: TOO_MANY };
   const file = fd.get("file");
   if (!(file instanceof File)) return { error: "Aucun fichier reçu." };
   const head = new Uint8Array(await file.slice(0, 16).arrayBuffer());
@@ -143,6 +145,7 @@ export async function applyAction(_: ActionState, fd: FormData): Promise<ActionS
   const user = await requireUser(["candidate"], "/offres");
   const parsed = applicationSchema.safeParse({ offerId: fd.get("offerId"), coverMessage: fd.get("coverMessage") ?? "" });
   if (!parsed.success) return { fieldErrors: fieldErrorsOf(parsed.error) };
+  if (!(await allow("apply", user.id))) return { error: TOO_MANY };
   const supabase = await createClient();
   const { error } = await supabase
     .from("applications")

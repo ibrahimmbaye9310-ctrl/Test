@@ -103,6 +103,23 @@ type ApplicationRow = {
 
 type OfferDailyViewsRow = { job_offer_id: string; day: string; views: number };
 
+type NotificationType = "application_received" | "application_status" | "offer_moderated" | "offer_expiring" | "subscription" | "system";
+type NotificationRow = { id: string; user_id: string; type: NotificationType; title: string; body: string | null; link: string | null; read_at: string | null; created_at: string };
+type ReportReason = "fraud" | "discriminatory" | "misleading" | "filled" | "inappropriate" | "other";
+type ReportRow = {
+  id: string; job_offer_id: string; reporter_id: string | null; reason: ReportReason; details: string | null;
+  status: "open" | "reviewing" | "resolved" | "dismissed"; admin_note: string | null; resolved_at: string | null; created_at: string; updated_at: string;
+};
+type SubscriptionRow = {
+  id: string; company_id: string; stripe_customer_id: string; stripe_subscription_id: string | null; plan: "starter" | "pro" | null;
+  status: "trialing" | "active" | "past_due" | "canceled" | "incomplete" | "incomplete_expired" | "unpaid" | "paused" | null;
+  current_period_end: string | null; cancel_at_period_end: boolean; created_at: string; updated_at: string;
+};
+type PaymentRow = {
+  id: string; company_id: string; kind: "subscription" | "single_offer"; stripe_reference: string; amount_cents: number; currency: string;
+  status: "pending" | "succeeded" | "failed" | "refunded"; description: string | null; created_at: string;
+};
+
 type SavedJobRow = { candidate_id: string; job_offer_id: string; created_at: string };
 
 type PublicJobOfferRow = JobOfferRow & { company_name: string; company_description: string | null; company_logo_path: string | null };
@@ -155,6 +172,15 @@ export type Database = {
           Rel & { foreignKeyName: "saved_jobs_candidate_id_fkey"; columns: ["candidate_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
       };
+      notifications: { Row: NotificationRow; Insert: never; Update: Pick<NotificationRow, "read_at">; Relationships: [] };
+      reports: {
+        Row: ReportRow;
+        Insert: Insertable<ReportRow, "job_offer_id" | "reporter_id" | "reason">;
+        Update: Partial<Pick<ReportRow, "status" | "admin_note" | "resolved_at">>;
+        Relationships: [];
+      };
+      subscriptions: { Row: SubscriptionRow; Insert: Insertable<SubscriptionRow, "company_id" | "stripe_customer_id">; Update: Partial<SubscriptionRow>; Relationships: [] };
+      payments: { Row: PaymentRow; Insert: Insertable<PaymentRow, "company_id" | "kind" | "stripe_reference" | "amount_cents" | "status">; Update: Partial<PaymentRow>; Relationships: [] };
       offer_daily_views: {
         Row: OfferDailyViewsRow;
         Insert: never;
@@ -169,6 +195,7 @@ export type Database = {
       current_user_role: { Args: Record<string, never>; Returns: UserRole };
       is_admin: { Args: Record<string, never>; Returns: boolean };
       record_offer_view: { Args: { offer: string }; Returns: undefined };
+      check_rate_limit: { Args: { bucket_key: string; max_hits: number; window_seconds: number }; Returns: boolean };
     };
     Enums: {
       user_role: UserRole;
@@ -188,6 +215,8 @@ export type Database = {
 export type Tables<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Row"];
 export type Profile = ProfileRow;
 export type Company = CompanyRow;
+export type Notification = NotificationRow;
+export type ReportReasonValue = ReportReason;
 export type JobOfferRecord = JobOfferRow;
 export type PublicJobOffer = PublicJobOfferRow;
 export type ApplicationStatusValue = ApplicationStatus;

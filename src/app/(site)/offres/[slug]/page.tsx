@@ -21,6 +21,7 @@ import { getOfferInteraction } from "@/lib/candidate/queries";
 import { ApplyPanel } from "@/components/candidate/apply-panel";
 import { SaveJobButton } from "@/components/candidate/action-buttons";
 import { ApplicationStatusBadge } from "@/components/candidate/application-status-badge";
+import { ReportOffer } from "@/components/reports/report-offer";
 import { formatRelativeDate } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -196,6 +197,11 @@ export default async function OfferPage({ params }: Props) {
               <p className="mt-5 text-xs text-ink-subtle">
                 Offre valable jusqu&apos;au {dateFmt.format(new Date(offer.validThrough))}.
               </p>
+              {!offer.isDemo && user?.profile.role !== "recruiter" && (
+                <div className="mt-4 border-t border-line pt-4">
+                  <ReportOffer offerId={offer.id} loginHref={user ? null : loginHref} />
+                </div>
+              )}
             </Card>
           </aside>
         </div>

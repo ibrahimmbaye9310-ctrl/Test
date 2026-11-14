@@ -180,6 +180,44 @@ set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-000
 select t.count_is('recruteur B : ne lit pas les statistiques d''ACME', 'select * from public.offer_daily_views', 0);
 reset role;
 
+-- ═══ Migration 3 : notifications, signalements, abonnements, limitation ═══
+select t.count_is('notification : recruteur prévenu de la candidature', $$select 1 from public.notifications where user_id = '00000000-0000-0000-0000-00000000000c' and type = 'application_received'$$, 1);
+select t.count_is('notification : candidat prévenu du passage en entretien', $$select 1 from public.notifications where user_id = '00000000-0000-0000-0000-00000000000a' and type = 'application_status' and title like '%Entretien'$$, 1);
+
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+select t.count_is('candidat : ne voit que ses notifications', 'select * from public.notifications', 1);
+select t.allowed('candidat : marque sa notification comme lue', 'update public.notifications set read_at = now()');
+select t.denied('candidat : modifie le texte d''une notification', $$update public.notifications set title = 'Faux'$$);
+select t.denied('candidat : crée une notification', $$insert into public.notifications (user_id, type, title) values (auth.uid(), 'system', 'Spam')$$);
+select t.allowed('candidat : signale une offre publiée', $$insert into public.reports (job_offer_id, reporter_id, reason, details) values ('20000000-0000-0000-0000-000000000002', auth.uid(), 'fraud', 'Demande de paiement')$$);
+select t.denied('candidat : signale deux fois la même offre', $$insert into public.reports (job_offer_id, reporter_id, reason) values ('20000000-0000-0000-0000-000000000002', auth.uid(), 'other')$$);
+select t.denied('candidat : signale au nom d''un autre', $$insert into public.reports (job_offer_id, reporter_id, reason) values ('20000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-00000000000b', 'other')$$);
+select t.denied('candidat : clôt lui-même son signalement', $$update public.reports set status = 'resolved'$$);
+select t.denied('candidat : crée un abonnement', $$insert into public.subscriptions (company_id, stripe_customer_id) values ('10000000-0000-0000-0000-000000000001', 'cus_x')$$);
+select t.count_is('limitation : 3 premières tentatives acceptées', $$select 1 from generate_series(1,3) where public.check_rate_limit('test:cle-de-test', 3, 60)$$, 3);
+select t.count_is('limitation : 4e tentative refusée', $$select 1 where not public.check_rate_limit('test:cle-de-test', 3, 60)$$, 1);
+select t.denied('limitation : table illisible directement', 'delete from public.rate_limits');
+select t.denied('purge : réservée au serveur', 'select public.run_data_retention()');
+reset role;
+
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+select t.denied('recruteur : signale sa propre offre', $$insert into public.reports (job_offer_id, reporter_id, reason) values ('20000000-0000-0000-0000-000000000002', auth.uid(), 'other')$$);
+select t.count_is('recruteur : ne voit pas qui l''a signalé', 'select * from public.reports', 0);
+select t.denied('recruteur : s''attribue un abonnement', $$insert into public.subscriptions (company_id, stripe_customer_id, plan, status) values ('10000000-0000-0000-0000-000000000001', 'cus_x', 'pro', 'active')$$);
+select t.denied('recruteur : enregistre un faux paiement', $$insert into public.payments (company_id, kind, stripe_reference, amount_cents, status) values ('10000000-0000-0000-0000-000000000001', 'subscription', 'in_x', 5900, 'succeeded')$$);
+reset role;
+insert into public.subscriptions (company_id, stripe_customer_id, plan, status) values ('10000000-0000-0000-0000-000000000001', 'cus_test', 'pro', 'active');
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+select t.count_is('recruteur : lit son abonnement', 'select * from public.subscriptions', 1);
+reset role;
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000d';
+select t.count_is('recruteur B : ne lit pas l''abonnement d''ACME', 'select * from public.subscriptions', 0);
+reset role;
+
+update public.job_offers set expires_at = now() - interval '1 day' where id = '20000000-0000-0000-0000-000000000002';
+select public.run_data_retention();
+select t.count_is('purge : offre échue passée en « expirée »', $$select 1 from public.job_offers where id = '20000000-0000-0000-0000-000000000002' and status = 'expired'$$, 1);
+
 -- ── Suppression de compte : tout part en cascade
 delete from auth.users where id = '00000000-0000-0000-0000-00000000000a';
 select t.count_is('suppression : profil, candidatures et favoris effacés',

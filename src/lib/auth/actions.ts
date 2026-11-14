@@ -7,6 +7,7 @@ import { siteConfig } from "@/lib/config/site";
 import { echo, fieldErrorsOf, type ActionState } from "@/lib/validation/common";
 import { newPasswordSchema, resetRequestSchema, signInSchema, signUpSchema } from "@/lib/validation/auth";
 import { homeForRole, safeNextPath } from "./session";
+import { TOO_MANY, allow, clientIp } from "@/lib/security/rate-limit";
 
 const NOT_CONFIGURED = (fd: FormData): ActionState => ({ error: "Les comptes ne sont pas encore activés sur ce site (Supabase non configuré).", values: echo(fd) });
 const data = (fd: FormData) => Object.fromEntries(fd.entries());
@@ -16,6 +17,7 @@ export async function signUpAction(_: ActionState, formData: FormData): Promise<
   const parsed = signUpSchema.safeParse(data(formData));
   if (!parsed.success) return { fieldErrors: fieldErrorsOf(parsed.error), values: echo(formData) };
   const { email, password, fullName, role, companyName } = parsed.data;
+  if (!(await allow("signUp", await clientIp()))) return { error: TOO_MANY, values: echo(formData) };
 
   const supabase = await createClient();
   const { data: signUp, error } = await supabase.auth.signUp({
@@ -43,6 +45,8 @@ export async function signInAction(_: ActionState, formData: FormData): Promise<
   if (!isSupabaseConfigured) return NOT_CONFIGURED(formData);
   const parsed = signInSchema.safeParse(data(formData));
   if (!parsed.success) return { fieldErrors: fieldErrorsOf(parsed.error), values: echo(formData) };
+  const [byEmail, byIp] = await Promise.all([allow("signIn", parsed.data.email), allow("signInIp", await clientIp())]);
+  if (!byEmail || !byIp) return { error: TOO_MANY, values: echo(formData) };
 
   const supabase = await createClient();
   const { data: auth, error } = await supabase.auth.signInWithPassword(parsed.data);
@@ -69,6 +73,8 @@ export async function requestPasswordResetAction(_: ActionState, formData: FormD
   if (!isSupabaseConfigured) return NOT_CONFIGURED(formData);
   const parsed = resetRequestSchema.safeParse(data(formData));
   if (!parsed.success) return { fieldErrors: fieldErrorsOf(parsed.error), values: echo(formData) };
+  const [byEmail, byIp] = await Promise.all([allow("passwordReset", parsed.data.email), allow("passwordResetIp", await clientIp())]);
+  if (!byEmail || !byIp) return { error: TOO_MANY };
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
     redirectTo: `${siteConfig.url}/auth/confirm?suite=/mot-de-passe/nouveau`,

@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Bookmark, Building2, CreditCard, FileText, LayoutDashboard, Send, Settings, UserRound, Users } from "lucide-react";
+import { BarChart3, Bell, Bookmark, Building2, CreditCard, FileText, LayoutDashboard, Send, Settings, UserRound, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const ICONS = { dashboard: LayoutDashboard, profile: UserRound, send: Send, bookmark: Bookmark, settings: Settings, building: Building2, offers: FileText, users: Users, card: CreditCard, stats: BarChart3 };
+const ICONS = { dashboard: LayoutDashboard, profile: UserRound, send: Send, bookmark: Bookmark, settings: Settings, building: Building2, offers: FileText, users: Users, card: CreditCard, stats: BarChart3, bell: Bell };
 export type SpaceNavItem = { href: string; label: string; icon: keyof typeof ICONS; badge?: number };
 
 /** Menu d'un espace connecté : vertical sur ordinateur, onglets défilants sur mobile. */

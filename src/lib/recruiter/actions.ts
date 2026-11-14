@@ -11,6 +11,7 @@ import { APPLICATION_STATUSES } from "@/lib/config/applications";
 import { COMMUNES, resolvePlace } from "@/lib/geo/communes";
 import { slugify } from "@/lib/utils";
 import { getMyCompany } from "./queries";
+import { TOO_MANY, allow } from "@/lib/security/rate-limit";
 
 const FAILED: ActionState = { error: "L'enregistrement a échoué. Réessayez." };
 const isUuid = (v: unknown): v is string => typeof v === "string" && /^[0-9a-f-]{36}$/i.test(v);
@@ -52,6 +53,7 @@ export async function saveCompanyAction(_: ActionState, fd: FormData): Promise<A
 
 export async function uploadLogoAction(_: ActionState, fd: FormData): Promise<ActionState> {
   const { user, company } = await recruiterWithCompany();
+  if (!(await allow("upload", user.id))) return { error: TOO_MANY };
   const file = fd.get("file");
   if (!(file instanceof File)) return { error: "Aucun fichier reçu." };
   const invalid = validateUpload("logo", file, new Uint8Array(await file.slice(0, 16).arrayBuffer()));
@@ -119,8 +121,9 @@ function locateOffer(input: string) {
 }
 
 export async function saveOfferAction(offerId: string | null, _: ActionState, fd: FormData): Promise<ActionState> {
-  const { company } = await recruiterWithCompany();
+  const { user, company } = await recruiterWithCompany();
   const values = echo(fd);
+  if (!(await allow("publishOffer", user.id))) return { error: TOO_MANY, values };
   const parsed = offerSchema.safeParse(readOffer(fd));
   if (!parsed.success) return { fieldErrors: fieldErrorsOf(parsed.error), values, error: "Certains champs sont à corriger." };
   const d = parsed.data;

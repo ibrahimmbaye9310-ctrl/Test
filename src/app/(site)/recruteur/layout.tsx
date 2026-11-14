@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth/session";
 import { getMyCompany } from "@/lib/recruiter/queries";
 import { createClient } from "@/lib/supabase/server";
 import { logoUrl } from "@/lib/storage";
+import { countUnread } from "@/lib/notifications/queries";
 
 export const metadata: Metadata = { title: { default: "Espace recruteur", template: "%s · Espace recruteur" }, robots: { index: false } };
 
@@ -12,6 +13,7 @@ export default async function RecruiterLayout({ children }: { children: React.Re
   const user = await requireUser(["recruiter"], "/recruteur");
   const company = await getMyCompany(user.id);
   let newCount = 0;
+  const unread = await countUnread(user.id);
   if (company) {
     const supabase = await createClient();
     const { count } = await supabase
@@ -39,6 +41,7 @@ export default async function RecruiterLayout({ children }: { children: React.Re
               { href: "/recruteur", label: "Tableau de bord", icon: "dashboard" },
               { href: "/recruteur/offres", label: "Mes offres", icon: "offers" },
               { href: "/recruteur/candidatures", label: "Candidatures", icon: "users", badge: newCount },
+              { href: "/recruteur/notifications", label: "Notifications", icon: "bell", badge: unread },
               { href: "/recruteur/entreprise", label: "Entreprise", icon: "building" },
               { href: "/recruteur/abonnement", label: "Abonnement", icon: "card" },
               { href: "/recruteur/compte", label: "Compte", icon: "settings" },
