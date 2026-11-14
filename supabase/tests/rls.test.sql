@@ -65,6 +65,10 @@ reset role;
 -- ── Claire (recruteuse ACME)
 set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
 select t.allowed('recruteur : crée son entreprise', $$insert into public.companies (id, owner_id, name, slug) values ('10000000-0000-0000-0000-000000000001', auth.uid(), 'ACME', 'acme')$$);
+reset role;
+-- ACME est une entreprise vérifiée (par l'administration) : ses offres sont publiées sans attente.
+update public.companies set is_verified = true where id = '10000000-0000-0000-0000-000000000001';
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
 select t.denied('recruteur : 2e entreprise', $$insert into public.companies (owner_id, name, slug) values (auth.uid(), 'ACME 2', 'acme-2')$$);
 select t.allowed('recruteur : publie une offre', $$insert into public.job_offers (id, company_id, title, slug, short_description, contract_type, work_time, sector, city, postal_code, status, published_at)
   values ('20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'Vendeur', 'vendeur-acme', 'Une description suffisamment longue.', 'cdi', 'full_time', 'retail', 'Créteil', '94000', 'published', now())$$);
@@ -217,6 +221,66 @@ reset role;
 update public.job_offers set expires_at = now() - interval '1 day' where id = '20000000-0000-0000-0000-000000000002';
 select public.run_data_retention();
 select t.count_is('purge : offre échue passée en « expirée »', $$select 1 from public.job_offers where id = '20000000-0000-0000-0000-000000000002' and status = 'expired'$$, 1);
+
+-- ═══ Migration 4 : administration et modération ═══
+insert into auth.users (id, email, raw_user_meta_data) values ('00000000-0000-0000-0000-0000000000ad', 'admin@test.fr', '{"full_name":"Ada Admin","role":"admin"}');
+select t.count_is('inscription « admin » : rôle candidat attribué', $$select 1 from public.profiles where id = '00000000-0000-0000-0000-0000000000ad' and role = 'candidate'$$, 1);
+update public.profiles set role = 'admin' where id = '00000000-0000-0000-0000-0000000000ad';
+
+-- Denis (non vérifié) crée son entreprise et publie : l'offre part en vérification.
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000d';
+select t.allowed('recruteur B : crée son entreprise', $$insert into public.companies (id, owner_id, name, slug, is_verified) values ('10000000-0000-0000-0000-000000000002', auth.uid(), 'Autre', 'autre', true)$$);
+select t.count_is('création : « vérifiée » forcé à faux', $$select 1 from public.companies where id = '10000000-0000-0000-0000-000000000002' and not is_verified$$, 1);
+select t.denied('recruteur : se déclare « vérifié »', $$update public.companies set is_verified = true where id = '10000000-0000-0000-0000-000000000002'$$);
+select t.allowed('recruteur non vérifié : demande la publication', $$insert into public.job_offers (id, company_id, title, slug, short_description, contract_type, work_time, sector, city, postal_code, status)
+  values ('20000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000002', 'Plongeur', 'plongeur-autre', 'Une description suffisamment longue.', 'cdi', 'full_time', 'hospitality', 'Paris', '75001', 'published')$$);
+select t.count_is('non vérifié : offre placée « en vérification »', $$select 1 from public.job_offers where id = '20000000-0000-0000-0000-000000000003' and status = 'pending' and published_at is null$$, 1);
+update public.job_offers set status = 'published' where id = '20000000-0000-0000-0000-000000000003';
+select t.count_is('recruteur : tenter de se valider laisse l''offre en vérification', $$select 1 from public.job_offers where id = '20000000-0000-0000-0000-000000000003' and status = 'pending'$$, 1);
+select t.denied('recruteur : écrit une note de modération', $$update public.job_offers set moderation_note = 'ok' where id = '20000000-0000-0000-0000-000000000003'$$);
+select t.denied('recruteur : lance les statistiques admin', 'select public.admin_stats()');
+select t.denied('recruteur : liste les comptes', 'select * from public.admin_list_users()');
+select t.denied('recruteur : suspend un compte', $$select public.admin_set_suspension('00000000-0000-0000-0000-00000000000b', true, 'x')$$);
+select t.denied('recruteur : écrit au journal admin', $$insert into public.admin_audit_log (admin_id, action, target_type, target_id) values (auth.uid(), 'fake', 'user', 'x')$$);
+select t.denied('recruteur : publie un avis', $$insert into public.testimonials (author_name, author_role, quote, consent_at, is_published) values ('Faux', 'Faux client', 'Un avis inventé de toutes pièces pour tromper.', current_date, true)$$);
+reset role;
+set role anon; set request.jwt.claim.sub = '';
+select t.count_is('anonyme : offre en vérification invisible', $$select 1 from public.job_offers where id = '20000000-0000-0000-0000-000000000003'$$, 0);
+reset role;
+
+-- L'administratrice
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000ad';
+select t.count_is('admin : statistiques', $$select 1 from (select public.admin_stats() s) x where (s->>'offers_pending')::int = 1 and (s->>'recruiters')::int = 2$$, 1);
+select t.count_is('admin : liste des comptes avec e-mail', $$select 1 from public.admin_list_users('autre.fr') where email = 'rh@autre.fr'$$, 1);
+select t.allowed('admin : valide l''offre', $$update public.job_offers set status = 'published' where id = '20000000-0000-0000-0000-000000000003'$$);
+select t.count_is('validation : dates fixées par la base', $$select 1 from public.job_offers where id = '20000000-0000-0000-0000-000000000003' and published_at is not null and expires_at > now() + interval '29 days'$$, 1);
+select t.count_is('validation : recruteur notifié', $$select 1 from public.notifications where type = 'offer_moderated' and title = 'Offre validée et en ligne'$$, 0); -- invisible pour l'admin (RLS)
+select t.allowed('admin : vérifie l''entreprise', $$update public.companies set is_verified = true where id = '10000000-0000-0000-0000-000000000002'$$);
+select t.allowed('admin : refuse une offre avec motif', $$update public.job_offers set status = 'rejected', moderation_note = 'Annonce trompeuse' where id = '20000000-0000-0000-0000-000000000003'$$);
+select t.allowed('admin : crée un avis authentique', $$insert into public.testimonials (author_name, author_role, quote, consent_at, is_published) values ('Inès', 'Étudiante, Créteil', 'J''ai trouvé un job le week-end compatible avec mes cours.', current_date, true)$$);
+select t.allowed('admin : journalise son action', $$insert into public.admin_audit_log (admin_id, action, target_type, target_id) values (auth.uid(), 'offer.reject', 'offer', '20000000-0000-0000-0000-000000000003')$$);
+select t.denied('admin : modifie le journal', $$update public.admin_audit_log set action = 'autre'$$);
+select t.denied('admin : se suspend lui-même', $$select public.admin_set_suspension(auth.uid(), true, 'x')$$);
+reset role;
+select t.count_is('refus : recruteur notifié avec le motif', $$select 1 from public.notifications where user_id = '00000000-0000-0000-0000-00000000000d' and type = 'offer_moderated' and body like '%Annonce trompeuse%'$$, 1);
+
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000d';
+select t.denied('recruteur : republie une offre refusée', $$update public.job_offers set status = 'draft' where id = '20000000-0000-0000-0000-000000000003'$$);
+reset role;
+set role anon; set request.jwt.claim.sub = '';
+select t.count_is('anonyme : voit les avis publiés', 'select * from public.testimonials', 1);
+reset role;
+
+-- Suspension de Denis : ses offres en ligne sont retirées, il ne peut plus publier ni postuler.
+update public.job_offers set status = 'published' where id = '20000000-0000-0000-0000-000000000003';
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000ad';
+select public.admin_set_suspension('00000000-0000-0000-0000-00000000000d', true, 'Fraude avérée');
+reset role;
+select t.count_is('suspension : offres retirées', $$select 1 from public.job_offers where id = '20000000-0000-0000-0000-000000000003' and status = 'closed'$$, 1);
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000d';
+select t.denied('suspendu : publie une offre', $$insert into public.job_offers (company_id, title, slug, short_description, contract_type, work_time, sector, city, postal_code) values ('10000000-0000-0000-0000-000000000002', 'Encore', 'encore', 'Une description suffisamment longue.', 'cdi', 'full_time', 'retail', 'Paris', '75001')$$);
+select t.denied('suspendu : lève sa suspension', $$update public.profiles set suspended_at = null where id = auth.uid()$$);
+reset role;
 
 -- ── Suppression de compte : tout part en cascade
 delete from auth.users where id = '00000000-0000-0000-0000-00000000000a';

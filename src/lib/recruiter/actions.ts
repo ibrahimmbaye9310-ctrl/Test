@@ -154,34 +154,37 @@ export async function saveOfferAction(offerId: string | null, _: ActionState, fd
   if (offerId) {
     if (!isUuid(offerId)) return FAILED;
     const update = d.intent === "publish" ? { ...row, status: "published" as const } : row;
-    const { data, error } = await supabase.from("job_offers").update(update).eq("id", offerId).eq("company_id", company.id).select("id");
+    const { data, error } = await supabase.from("job_offers").update(update).eq("id", offerId).eq("company_id", company.id).select("id, status");
     if (error || !data?.length) return { ...FAILED, values };
     refresh();
-    redirect(`/recruteur/offres/${offerId}?enregistree=1`);
+    redirect(`/recruteur/offres/${offerId}?${data[0]!.status === "pending" ? "verification" : "enregistree"}=1`);
   }
 
   const slug = `${slugify(`${d.title} ${where.city}`).slice(0, 80)}-${crypto.randomUUID().slice(0, 6)}`;
   const { data, error } = await supabase
     .from("job_offers")
     .insert({ ...row, company_id: company.id, slug, status: d.intent === "publish" ? "published" : "draft" })
-    .select("id")
+    .select("id, status")
     .single();
   if (error || !data) {
     console.error("[saveOffer]", error?.message);
     return { ...FAILED, values };
   }
   refresh();
-  redirect(`/recruteur/offres/${data.id}?${d.intent === "publish" ? "publiee" : "brouillon"}=1`);
+  // Entreprise non vérifiée : la base place l'offre « en vérification » au lieu de la publier.
+  redirect(`/recruteur/offres/${data.id}?${data.status === "pending" ? "verification" : data.status === "published" ? "publiee" : "brouillon"}=1`);
 }
 
 export async function setOfferStatusAction(offerId: string, status: "published" | "closed" | "draft"): Promise<ActionState> {
   const { company } = await recruiterWithCompany();
   if (!isUuid(offerId) || !["published", "closed", "draft"].includes(status)) return FAILED;
   const supabase = await createClient();
-  const { data, error } = await supabase.from("job_offers").update({ status }).eq("id", offerId).eq("company_id", company.id).select("id");
+  const { data, error } = await supabase.from("job_offers").update({ status }).eq("id", offerId).eq("company_id", company.id).select("id, status");
   if (error || !data?.length) return { error: error?.message.includes("modération") ? "Cette offre a été refusée par la modération." : FAILED.error };
   refresh();
-  return { ok: true, message: status === "published" ? "Offre publiée pour 30 jours." : status === "closed" ? "Offre fermée : elle n'apparaît plus dans les résultats." : "Offre repassée en brouillon." };
+  const final = data[0]!.status;
+  if (final === "pending") return { ok: true, message: "Offre envoyée en vérification : elle sera en ligne dès sa validation par notre équipe." };
+  return { ok: true, message: final === "published" ? "Offre publiée pour 30 jours." : final === "closed" ? "Offre fermée : elle n'apparaît plus dans les résultats." : "Offre repassée en brouillon." };
 }
 
 export async function deleteOfferAction(offerId: string): Promise<ActionState> {

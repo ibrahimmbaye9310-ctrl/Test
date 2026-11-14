@@ -36,6 +36,8 @@ type ProfileRow = {
   desired_sectors: Sector[];
   search_radius_km: number | null;
   open_to_work: boolean;
+  suspended_at: string | null;
+  suspension_reason: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -86,6 +88,7 @@ type JobOfferRow = {
   published_at: string | null;
   expires_at: string | null;
   views_count: number;
+  moderation_note: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -119,6 +122,18 @@ type PaymentRow = {
   id: string; company_id: string; kind: "subscription" | "single_offer"; stripe_reference: string; amount_cents: number; currency: string;
   status: "pending" | "succeeded" | "failed" | "refunded"; description: string | null; created_at: string;
 };
+
+type TestimonialRow = { id: string; author_name: string; author_role: string; quote: string; consent_at: string; is_published: boolean; created_by: string | null; created_at: string };
+type AuditRow = { id: number; admin_id: string | null; action: string; target_type: "user" | "company" | "offer" | "report" | "testimonial" | "subscription"; target_id: string; details: Record<string, unknown>; created_at: string };
+export type AdminUserRow = {
+  id: string; email: string; full_name: string; role: UserRole; created_at: string; last_sign_in_at: string | null;
+  suspended_at: string | null; suspension_reason: string | null; company_name: string | null; total: number;
+};
+export type AdminStats = Record<
+  "candidates" | "recruiters" | "suspended" | "companies" | "verified_companies" | "offers_published" | "offers_pending" | "offers_total" |
+  "applications" | "applications_30d" | "signups_30d" | "reports_open" | "active_subscriptions" | "revenue_cents" | "revenue_30d_cents",
+  number
+>;
 
 type SavedJobRow = { candidate_id: string; job_offer_id: string; created_at: string };
 
@@ -181,6 +196,13 @@ export type Database = {
       };
       subscriptions: { Row: SubscriptionRow; Insert: Insertable<SubscriptionRow, "company_id" | "stripe_customer_id">; Update: Partial<SubscriptionRow>; Relationships: [] };
       payments: { Row: PaymentRow; Insert: Insertable<PaymentRow, "company_id" | "kind" | "stripe_reference" | "amount_cents" | "status">; Update: Partial<PaymentRow>; Relationships: [] };
+      testimonials: {
+        Row: TestimonialRow;
+        Insert: Insertable<TestimonialRow, "author_name" | "author_role" | "quote" | "consent_at">;
+        Update: Partial<TestimonialRow>;
+        Relationships: [];
+      };
+      admin_audit_log: { Row: AuditRow; Insert: Insertable<Omit<AuditRow, "id">, "admin_id" | "action" | "target_type" | "target_id">; Update: never; Relationships: [] };
       offer_daily_views: {
         Row: OfferDailyViewsRow;
         Insert: never;
@@ -195,6 +217,9 @@ export type Database = {
       current_user_role: { Args: Record<string, never>; Returns: UserRole };
       is_admin: { Args: Record<string, never>; Returns: boolean };
       record_offer_view: { Args: { offer: string }; Returns: undefined };
+      admin_stats: { Args: Record<string, never>; Returns: AdminStats };
+      admin_list_users: { Args: { search?: string | null; role_filter?: string | null; max_rows?: number; skip?: number }; Returns: AdminUserRow[] };
+      admin_set_suspension: { Args: { target: string; suspend: boolean; reason?: string | null }; Returns: undefined };
       check_rate_limit: { Args: { bucket_key: string; max_hits: number; window_seconds: number }; Returns: boolean };
     };
     Enums: {
@@ -216,6 +241,8 @@ export type Tables<T extends keyof Database["public"]["Tables"]> = Database["pub
 export type Profile = ProfileRow;
 export type Company = CompanyRow;
 export type Notification = NotificationRow;
+export type Testimonial = TestimonialRow;
+export type AuditEntry = AuditRow;
 export type ReportReasonValue = ReportReason;
 export type JobOfferRecord = JobOfferRow;
 export type PublicJobOffer = PublicJobOfferRow;

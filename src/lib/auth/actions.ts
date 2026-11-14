@@ -56,7 +56,11 @@ export async function signInAction(_: ActionState, formData: FormData): Promise<
     if (error?.status === 429) return { error: "Trop de tentatives. Réessayez dans quelques minutes.", values };
     return { error: "Adresse e-mail ou mot de passe incorrect.", values };
   }
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", auth.user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("role, suspended_at").eq("id", auth.user.id).single();
+  if (profile?.suspended_at) {
+    await supabase.auth.signOut();
+    return { error: "Ce compte a été suspendu. Contactez-nous si vous pensez qu'il s'agit d'une erreur.", values: echo(formData) };
+  }
   const home = homeForRole(profile?.role ?? "candidate");
   redirect(safeNextPath(formData.get("suite"), home));
 }

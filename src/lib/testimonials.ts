@@ -1,10 +1,14 @@
 import "server-only";
 import type { Testimonial } from "@/components/landing/testimonials";
+import { createPublicClient } from "@/lib/supabase/public";
 
 /**
- * Avis authentiques uniquement. Aucun avis n'existe avant le lancement : la liste est vide
- * et la section n'est pas affichée. Phase 6 : lecture des avis validés en base par un administrateur.
+ * Avis authentiques uniquement : saisis par un administrateur avec la date du consentement de leur auteur,
+ * puis publiés. Tant qu'aucun avis n'est publié, la section n'apparaît pas sur la page d'accueil.
  */
 export async function getApprovedTestimonials(): Promise<Testimonial[]> {
-  return [];
+  const supabase = createPublicClient();
+  if (!supabase) return [];
+  const { data } = await supabase.from("testimonials").select("id, author_name, author_role, quote, consent_at").eq("is_published", true).order("created_at", { ascending: false }).limit(6);
+  return (data ?? []).map((t) => ({ id: t.id, quote: t.quote, authorName: t.author_name, authorRole: t.author_role, collectedAt: t.consent_at }));
 }

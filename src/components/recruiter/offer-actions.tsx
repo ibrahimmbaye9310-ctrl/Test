@@ -14,6 +14,23 @@ export function OfferActions({ offerId, slug, status, expired }: { offerId: stri
   const [confirmDelete, setConfirmDelete] = useState(false);
   const run = (fn: () => Promise<ActionState>) => start(async () => setState(await fn()));
   const online = status === "published" && !expired;
+  if (status === "pending" || status === "rejected")
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        {status === "pending" && <p className="text-sm text-ink-muted">En attente de validation par notre équipe.</p>}
+        <ButtonLink href={`/recruteur/offres/${offerId}/modifier`} variant="secondary"><Pencil aria-hidden /> Modifier</ButtonLink>
+        {!confirmDelete ? (
+          <Button variant="ghost" className="text-danger-600 hover:bg-danger-50 hover:text-danger-600" onClick={() => setConfirmDelete(true)}><Trash2 aria-hidden /> Supprimer</Button>
+        ) : (
+          <span className="inline-flex flex-wrap items-center gap-2 rounded-xl bg-danger-50 px-3 py-1.5 text-sm text-danger-600" role="alertdialog" aria-label="Confirmer la suppression">
+            Supprimer définitivement ?
+            <Button size="sm" variant="danger" loading={pending} onClick={() => run(() => deleteOfferAction(offerId))}>Oui, supprimer</Button>
+            <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(false)}>Annuler</Button>
+          </span>
+        )}
+        <FormMessage state={state} />
+      </div>
+    );
 
   return (
     <div className="space-y-3">

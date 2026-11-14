@@ -31,6 +31,7 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
 export async function requireUser(roles?: Role[], next = "/espace"): Promise<SessionUser> {
   const user = await getCurrentUser();
   if (!user) redirect(`/connexion?suite=${encodeURIComponent(next)}`);
+  if (user.profile.suspended_at) redirect("/compte-suspendu");
   if (roles && !roles.includes(user.profile.role)) redirect(homeForRole(user.profile.role));
   return user;
 }

@@ -38,6 +38,14 @@ export default async function RecruiterOfferPage({ params, searchParams }: Props
       {flags.publiee && <Callout>Offre publiée : elle est visible dans la recherche pendant 30 jours.</Callout>}
       {flags.brouillon && <Callout>Brouillon enregistré. Publiez-le quand il est prêt.</Callout>}
       {flags.enregistree && <Callout>Modifications enregistrées.</Callout>}
+      {flags.verification && (
+        <Callout>Offre envoyée en vérification. Notre équipe la valide sous 24 h ouvrées ; vous serez notifié·e dès sa mise en ligne.</Callout>
+      )}
+      {offer.status === "rejected" && (
+        <Callout tone="warning">
+          <strong>Offre refusée par la modération.</strong> {offer.moderation_note ? `Motif : ${offer.moderation_note}` : ""} Elle ne peut pas être republiée ; contactez-nous si besoin.
+        </Callout>
+      )}
 
       <header className="space-y-4">
         <div className="flex flex-wrap items-center gap-2">
