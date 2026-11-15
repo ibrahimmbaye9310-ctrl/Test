@@ -10,6 +10,6 @@
 | 6 | Back-office administrateur : statistiques, modération, utilisateurs, entreprises, signalements, avis, journal | ✅ |
 | 7 | Stripe : Checkout, abonnements, unité, portail client, webhooks, limites par formule | ✅ |
 | 8 | E-mails Resend, sitemap, robots, JSON-LD, image de partage, accessibilité WCAG AA, performance | ✅ |
-| 9 | Tests (unitaires, E2E Playwright, RLS), audit, checklist de mise en production | ⏳ |
+| 9 | Tests complets, intégration continue, revue de sécurité, guides de déploiement et de lancement | ✅ (déploiement : à réaliser avec vos comptes) |
 
 Note : la phase 5 (schéma SQL) sera amorcée dès la phase 3, puisque l'authentification et l'espace candidat ont besoin des tables `profiles`, `applications` et `saved_jobs`. La phase 5 complète et durcit l'ensemble.

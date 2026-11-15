@@ -9,8 +9,11 @@ export const siteConfig = {
   contactEmail: "contact@jobfinder.fr",
 } as const;
 
-/** Les offres de démonstration ne s'affichent jamais si ce flag vaut "false". */
-export const demoDataEnabled = process.env.NEXT_PUBLIC_ENABLE_DEMO_DATA !== "false";
+/**
+ * Offres de démonstration (fictives) : uniquement si NEXT_PUBLIC_ENABLE_DEMO_DATA vaut exactement "true".
+ * Désactivées par défaut — et toujours en production Vercel — pour qu'aucune offre fictive ne soit publiée par oubli.
+ */
+export const demoDataEnabled = process.env.NEXT_PUBLIC_ENABLE_DEMO_DATA === "true" && process.env.NEXT_PUBLIC_VERCEL_ENV !== "production";
 
 export const mainNav = [
   { href: "/offres", label: "Offres d'emploi" },

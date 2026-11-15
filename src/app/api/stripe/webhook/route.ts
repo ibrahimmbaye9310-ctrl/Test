@@ -7,6 +7,9 @@ import { handleStripeEvent } from "@/lib/billing/webhook";
  * Webhook Stripe. La signature (STRIPE_WEBHOOK_SECRET) est vérifiée sur le corps brut :
  * un appel qui ne vient pas de Stripe est rejeté avant toute écriture.
  */
+/** Le traitement peut appeler Stripe et la base : marge de 30 s (Vercel). */
+export const maxDuration = 30;
+
 export async function POST(request: NextRequest) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   const signature = request.headers.get("stripe-signature");

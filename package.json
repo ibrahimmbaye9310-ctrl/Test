@@ -13,7 +13,10 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run build"
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "test:rls": "supabase/tests/run.sh",
+    "test:e2e": "tests/e2e/run-all.sh",
+    "audit:a11y": "node tests/audit/axe.cjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
