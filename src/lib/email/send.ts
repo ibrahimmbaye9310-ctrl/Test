@@ -30,6 +30,8 @@ export async function sendEmail(to: string | null | undefined, email: Email, tag
       console.error(`[email:${tag}]`, error.message);
       return { error: error.message };
     }
+    // Journal sans donnée personnelle : type d'e-mail et identifiant Resend (traçable dans le tableau de bord Resend).
+    console.info(`[email:${tag}] envoyé ${data?.id}`);
     return { id: data?.id };
   } catch (e) {
     console.error(`[email:${tag}]`, e instanceof Error ? e.message : e);
