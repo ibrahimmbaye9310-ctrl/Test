@@ -235,6 +235,8 @@ export type Database = {
       billing_grant_credit: { Args: { company: string; reference: string }; Returns: undefined };
       billing_notify: { Args: { company: string; kind: string; title: string; body: string }; Returns: undefined };
       billing_company_of: { Args: { customer: string }; Returns: string | null };
+      server_user_contact: { Args: { target: string }; Returns: { email: string; full_name: string; role: UserRole }[] };
+      server_company_contact: { Args: { company: string }; Returns: { email: string; full_name: string; company_name: string }[] };
       check_rate_limit: { Args: { bucket_key: string; max_hits: number; window_seconds: number }; Returns: boolean };
     };
     Enums: {

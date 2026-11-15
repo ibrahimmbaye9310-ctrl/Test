@@ -1,4 +1,8 @@
 import { z } from "zod";
+
+// Ce module est aussi chargé dans le navigateur : on désactive l'optimisation de Zod basée sur eval
+// (bloquée par notre CSP, elle déclencherait une violation signalée par le navigateur).
+z.config({ jitless: true });
 import { CONTRACT_TYPES, RADIUS_OPTIONS, SCHEDULES, SECTORS, WORK_TIMES } from "@/lib/config/taxonomy";
 
 /**

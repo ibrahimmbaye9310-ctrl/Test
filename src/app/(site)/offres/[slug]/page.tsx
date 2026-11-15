@@ -146,12 +146,12 @@ export default async function OfferPage({ params }: Props) {
               )}
               <dl className="space-y-4">
                 {facts.map(({ icon: Icon, label, value }) => (
-                  <div key={label} className="flex gap-3">
-                    <Icon className="mt-0.5 size-4 shrink-0 text-ink-subtle" aria-hidden />
-                    <div>
-                      <dt className="text-xs text-ink-subtle">{label}</dt>
-                      <dd className="text-sm font-medium text-navy-900">{value}</dd>
-                    </div>
+                  <div key={label}>
+                    <dt className="flex items-center gap-3 text-xs text-ink-subtle">
+                      <Icon className="size-4 shrink-0" aria-hidden />
+                      {label}
+                    </dt>
+                    <dd className="pl-7 text-sm font-medium text-navy-900">{value}</dd>
                   </div>
                 ))}
               </dl>

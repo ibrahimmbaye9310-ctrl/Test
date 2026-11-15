@@ -40,15 +40,15 @@
   --color-line-strong: #d5dae5;
   --color-ink: #0e1a36;
   --color-ink-muted: #545f78;
-  --color-ink-subtle: #8a93a8;
+  --color-ink-subtle: #667085; /* 4,97:1 sur blanc (WCAG AA) */
 
   /* États */
   --color-success-50: #ecfdf3;
-  --color-success-600: #079455;
+  --color-success-600: #067647; /* 5,4:1 sur success-50 */
   --color-warning-50: #fffaeb;
-  --color-warning-600: #dc6803;
+  --color-warning-600: #b54708; /* 5,2:1 sur warning-50 */
   --color-danger-50: #fef3f2;
-  --color-danger-600: #d92d20;
+  --color-danger-600: #b42318; /* 6:1 sur danger-50 */
 
   --radius-card: 1rem;
 

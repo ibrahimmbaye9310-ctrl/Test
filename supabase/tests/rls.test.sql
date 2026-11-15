@@ -365,6 +365,18 @@ set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-000
 select t.allowed('admin : offre un crédit (geste commercial)', $$insert into public.offer_credits (company_id, source, note) values ('10000000-0000-0000-0000-000000000003', 'admin', 'Geste commercial')$$);
 reset role;
 
+-- ═══ Migration 6 : contacts pour les e-mails (serveur uniquement) ═══
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select t.denied('candidat : lit l''e-mail d''un recruteur', $$select * from public.server_user_contact('00000000-0000-0000-0000-00000000000c')$$);
+select t.denied('candidat : lit le contact d''une entreprise', $$select * from public.server_company_contact('10000000-0000-0000-0000-000000000001')$$);
+reset role;
+set role anon; set request.jwt.claim.sub = '';
+select set_config('request.headers', json_build_object('x-billing-key', :'billing_key')::text, false);
+select t.count_is('serveur : contact d''un compte', $$select 1 from public.server_user_contact('00000000-0000-0000-0000-00000000000c') where email = 'rh@acme.fr'$$, 1);
+select t.count_is('serveur : contact d''une entreprise', $$select 1 from public.server_company_contact('10000000-0000-0000-0000-000000000001') where company_name = 'ACME'$$, 1);
+select set_config('request.headers', '{}', false);
+reset role;
+
 -- ── Suppression de compte : tout part en cascade
 delete from auth.users where id = '00000000-0000-0000-0000-00000000000a';
 select t.count_is('suppression : profil, candidatures et favoris effacés',

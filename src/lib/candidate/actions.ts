@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { emailApplicationSubmitted } from "@/lib/email/notify";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -147,16 +149,23 @@ export async function applyAction(_: ActionState, fd: FormData): Promise<ActionS
   if (!parsed.success) return { fieldErrors: fieldErrorsOf(parsed.error) };
   if (!(await allow("apply", user.id))) return { error: TOO_MANY };
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data: created, error } = await supabase
     .from("applications")
-    .insert({ job_offer_id: parsed.data.offerId, candidate_id: user.id, cover_message: parsed.data.coverMessage });
-  if (error) {
-    if (error.code === "23505") return { error: "Vous avez déjà postulé à cette offre." };
+    .insert({ job_offer_id: parsed.data.offerId, candidate_id: user.id, cover_message: parsed.data.coverMessage })
+    .select("id")
+    .single();
+  if (error || !created) {
+    if (error?.code === "23505") return { error: "Vous avez déjà postulé à cette offre." };
     // RLS : offre non publiée, expirée ou compte non candidat.
     return { error: "Cette offre n'accepte plus de candidatures." };
   }
+  const { data: offer } = await supabase.from("public_job_offers").select("title, company_id, company_name").eq("id", parsed.data.offerId).single();
+  if (offer) {
+    // Envoyés après la réponse : la candidature n'attend jamais les e-mails.
+    after(() => emailApplicationSubmitted({ applicationId: created.id, candidateEmail: user.email, candidateName: user.profile.full_name, offerTitle: offer.title, companyId: offer.company_id, companyName: offer.company_name }));
+  }
   revalidatePath("/espace", "layout");
-  return { ok: true, message: "Candidature envoyée ! Suivez son avancement depuis votre espace." };
+  return { ok: true, message: "Candidature envoyée ! Un e-mail de confirmation vous a été adressé." };
 }
 
 export async function withdrawApplicationAction(applicationId: string): Promise<ActionState> {

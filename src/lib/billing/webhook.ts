@@ -2,6 +2,7 @@ import "server-only";
 import type Stripe from "stripe";
 import { billingClient } from "./db";
 import { planFromPrice, stripe } from "@/lib/stripe/server";
+import { emailBilling } from "@/lib/email/notify";
 
 type Db = ReturnType<typeof billingClient>;
 const idOf = (x: string | { id: string } | null | undefined) => (typeof x === "string" ? x : x?.id ?? null);
@@ -58,12 +59,14 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<"processed
           await must(db.rpc("billing_grant_credit", { company, reference: s.id }));
           await must(db.rpc("billing_record_payment", { company, payment_kind: "single_offer", reference: s.id, amount: s.amount_total ?? 0, cur: s.currency ?? "eur", payment_status: "succeeded", label: "Annonce à l'unité (30 jours)" }));
           await must(db.rpc("billing_notify", { company, kind: "single", title: "Paiement confirmé : 1 annonce à l'unité", body: "Votre crédit est disponible : publiez votre annonce pour 30 jours." }));
+          await emailBilling(company, { kind: "single_offer" });
         }
         if (s.mode === "subscription" && s.subscription) {
           const sub = await stripe().subscriptions.retrieve(idOf(s.subscription)!);
           await syncSubscription(db, sub);
           const plan = subscriptionFields(sub).plan;
           await must(db.rpc("billing_notify", { company, kind: "subscription", title: `Abonnement ${plan ? PLAN_LABEL[plan] : ""} activé`, body: "Merci ! Votre formule est active : vous pouvez publier vos offres." }));
+          if (plan) await emailBilling(company, { kind: "subscription_activated", plan });
         }
         break;
       }
@@ -74,6 +77,7 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<"processed
         const company = await syncSubscription(db, sub);
         if (event.type === "customer.subscription.deleted" && company) {
           await must(db.rpc("billing_notify", { company, kind: "subscription", title: "Abonnement terminé", body: "Votre formule a pris fin. Vos annonces en ligne restent visibles jusqu'à leur expiration." }));
+          await emailBilling(company, { kind: "ended" });
         }
         break;
       }
@@ -90,8 +94,10 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<"processed
         await must(db.rpc("billing_record_payment", { company, payment_kind: "subscription", reference: inv.id, amount: ok ? inv.amount_paid : inv.amount_due, cur: inv.currency, payment_status: ok ? "succeeded" : "failed", label }));
         if (!ok) {
           await must(db.rpc("billing_notify", { company, kind: "subscription", title: "Échec du paiement de votre abonnement", body: "Mettez à jour votre moyen de paiement depuis la page Abonnement pour conserver votre formule." }));
+          await emailBilling(company, { kind: "payment_failed", amountCents: inv.amount_due });
         } else if (inv.billing_reason === "subscription_cycle") {
           await must(db.rpc("billing_notify", { company, kind: "subscription", title: "Abonnement renouvelé", body: "Le paiement de votre abonnement a bien été reçu. Merci !" }));
+          await emailBilling(company, { kind: "renewed", plan, amountCents: inv.amount_paid });
         }
         break;
       }

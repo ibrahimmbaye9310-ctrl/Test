@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { emailApplicationStatus } from "@/lib/email/notify";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth/session";
@@ -207,7 +209,7 @@ export async function deleteOfferAction(offerId: string): Promise<ActionState> {
 
 // ─── Candidatures ───────────────────────────────────────────────────────────
 export async function updateApplicationStatusAction(applicationId: string, status: string): Promise<ActionState> {
-  await recruiterWithCompany();
+  const { company } = await recruiterWithCompany();
   if (!isUuid(applicationId) || !APPLICATION_STATUSES.some((s) => s.value === status)) return FAILED;
   const supabase = await createClient();
   // La RLS garantit que la candidature concerne une offre de l'entreprise ; seul le statut est modifiable.
@@ -215,8 +217,11 @@ export async function updateApplicationStatusAction(applicationId: string, statu
     .from("applications")
     .update({ status: status as (typeof APPLICATION_STATUSES)[number]["value"] })
     .eq("id", applicationId)
-    .select("id");
+    .select("id, candidate_id, job_offers(title)");
   if (error || !data?.length) return FAILED;
+  const row = data[0]!;
+  const offerTitle = (row.job_offers as unknown as { title: string } | null)?.title ?? "";
+  after(() => emailApplicationStatus({ candidateId: row.candidate_id, offerTitle, companyName: company.name, status }));
   revalidatePath("/recruteur", "layout");
-  return { ok: true, message: "Statut mis à jour. Le candidat le voit dans son espace." };
+  return { ok: true, message: "Statut mis à jour. Le candidat est prévenu par e-mail et dans son espace." };
 }
