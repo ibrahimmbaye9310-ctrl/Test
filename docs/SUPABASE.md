@@ -15,6 +15,7 @@ Puis, de la même façon et dans l'ordre :
 | `20261115000003_security_notifications.sql` | Notifications, signalements, abonnements, paiements, limitation, purge RGPD | installé |
 | `20261115000004_admin.sql` | Modération, suspension, vérification des entreprises, avis, journal d'administration | installé |
 | `20261116000005_billing.sql` | Limites d'annonces, crédits à l'unité, mise en avant Pro, écritures de facturation (webhook) | installé |
+| `20261117000006_emails.sql` | Coordonnées des destinataires d'e-mails, réservées au serveur | installé |
 
 > Les migrations des phases suivantes se lancent de la même façon, dans l'ordre de leur nom de fichier. Elles sont ré-exécutables.
 > Elles sont testées avant livraison sur un PostgreSQL local : `PGHOST=… PGPORT=… PGUSER=postgres supabase/tests/run.sh`.
@@ -80,7 +81,7 @@ update public.profiles set role = 'admin' where id = (select id from auth.users 
 - Une entreprise **vérifiée** (bouton « Vérifier » dans `/admin/entreprises`, après contrôle du SIRET) publie directement.
 
 ## 6. Ce que protège la base (RLS)
-Vérifié par 151 tests automatisés (`supabase/tests/rls.test.sql`) :
+Vérifié par 155 tests automatisés (`supabase/tests/rls.test.sql`) :
 - chaque utilisateur ne lit et ne modifie que son profil ; personne ne peut changer son propre rôle ;
 - un recruteur ne voit un candidat (profil, CV, photo) que s'il a postulé à l'une de **ses** offres ;
 - seul le recruteur propriétaire change le statut d'une candidature, et uniquement le statut ;

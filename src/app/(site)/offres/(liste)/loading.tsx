@@ -1,7 +1,7 @@
 /** Squelette affiché pendant le chargement des résultats. */
 export default function Loading() {
   return (
-    <div className="container-page py-10" aria-busy="true" aria-label="Chargement des offres">
+    <div className="container-page py-10" role="status" aria-busy="true" aria-label="Chargement des offres">
       <div className="h-8 w-56 animate-pulse rounded-lg bg-navy-100" />
       <div className="mt-5 h-16 max-w-4xl animate-pulse rounded-2xl bg-navy-50" />
       <div className="mt-10 grid gap-8 lg:grid-cols-[260px_1fr]">

@@ -9,7 +9,7 @@
 | 5 | Migrations SQL, RLS, triggers, validation serveur, limitation de débit, contrôle des fichiers, notifications, signalements, purge RGPD | ✅ |
 | 6 | Back-office administrateur : statistiques, modération, utilisateurs, entreprises, signalements, avis, journal | ✅ |
 | 7 | Stripe : Checkout, abonnements, unité, portail client, webhooks, limites par formule | ✅ |
-| 8 | Resend (7 e-mails), sitemap, robots, JSON-LD JobPosting, métadonnées, performance, RGPD (export/suppression) | ⏳ |
+| 8 | E-mails Resend, sitemap, robots, JSON-LD, image de partage, accessibilité WCAG AA, performance | ✅ |
 | 9 | Tests (unitaires, E2E Playwright, RLS), audit, checklist de mise en production | ⏳ |
 
 Note : la phase 5 (schéma SQL) sera amorcée dès la phase 3, puisque l'authentification et l'espace candidat ont besoin des tables `profiles`, `applications` et `saved_jobs`. La phase 5 complète et durcit l'ensemble.

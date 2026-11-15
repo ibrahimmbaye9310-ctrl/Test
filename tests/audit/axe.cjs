@@ -1,5 +1,6 @@
-// Audit d'accessibilité WCAG 2.1 A/AA (axe-core) des pages publiques et privées.
-// Prérequis : npm i -D @axe-core/playwright ; serveur sur http://localhost:3100. Pages publiques seules : PUBLIC_ONLY=1.
+// Audit d'accessibilité WCAG 2.1 A/AA (axe-core) : 35 pages et états publics, candidat, recruteur, administrateur.
+// Prérequis : npm i -D @axe-core/playwright ; serveur sur http://localhost:3100 ; confirmation e-mail désactivée (comptes de test).
+// Pages publiques seules : PUBLIC_ONLY=1. Administrateur : ADMIN_JSON=chemin vers {"email","password"}.
 const { chromium } = require('playwright');
 const { default: AxeBuilder } = require('@axe-core/playwright');
 const { createClient } = require('@supabase/supabase-js');
@@ -23,21 +24,21 @@ const base = 'http://localhost:3100', PW = 'Jobfinder-test-2026', ts = Date.now(
 
   if (process.env.PUBLIC_ONLY) { console.log(`\n${total.pages} pages auditées (WCAG 2.1 A/AA) — ${total.violations} type(s) de violation`); return b.close(); }
   // Candidat (créé via l'API)
-  const email = `e2e.a11y.${ts}@example.com`; 
+  const email = `e2e.a11y.${ts}@example.com`;
   await createClient('https://ntfzctzimthfrcnllalc.supabase.co', KEY, { auth: { persistSession: false } }).auth.signUp({ email, password: PW, options: { data: { full_name: 'Axe Candidat', role: 'candidate' } } });
-  const c = await (await b.newContext()).newPage(); await login(c, email, PW);
+  const c = await (await b.newContext({ reducedMotion: 'reduce' })).newPage(); await login(c, email, PW);
   for (const u of ['/espace', '/espace/profil', '/espace/candidatures', '/espace/favoris', '/espace/notifications', '/espace/compte']) { await c.goto(base + u); await audit(c, 'candidat ' + u); }
   // Recruteur
-  const remail = `e2e.a11y.rec.${ts}@example.com`; 
+  const remail = `e2e.a11y.rec.${ts}@example.com`;
   await createClient('https://ntfzctzimthfrcnllalc.supabase.co', KEY, { auth: { persistSession: false } }).auth.signUp({ email: remail, password: PW, options: { data: { full_name: 'Axe Recruteur', role: 'recruiter', company_name: 'Axe SARL' } } });
-  const r = await (await b.newContext()).newPage(); await login(r, remail, PW);
+  const r = await (await b.newContext({ reducedMotion: 'reduce' })).newPage(); await login(r, remail, PW);
   await r.goto(base + '/recruteur/entreprise'); await audit(r, 'recruteur /recruteur/entreprise (création)');
   await r.click('#informations button[type=submit]'); await r.waitForURL(/bienvenue/);
   for (const u of ['/recruteur', '/recruteur/offres', '/recruteur/offres/nouvelle', '/recruteur/candidatures', '/recruteur/abonnement', '/recruteur/entreprise', '/recruteur/compte']) { await r.goto(base + u); await audit(r, 'recruteur ' + u); }
   await r.goto(base + '/recruteur/offres/nouvelle'); await r.click('button[value=publish]'); await r.getByText('Certains champs').first().waitFor(); await audit(r, 'recruteur : formulaire d\'offre avec erreurs');
   // Administrateur
   const admin = JSON.parse(fs.readFileSync(process.env.ADMIN_JSON ?? 'admin.json', 'utf8'));
-  const a = await (await b.newContext()).newPage(); await login(a, admin.email, admin.password);
+  const a = await (await b.newContext({ reducedMotion: 'reduce' })).newPage(); await login(a, admin.email, admin.password);
   for (const u of ['/admin', '/admin/moderation', '/admin/signalements', '/admin/utilisateurs', '/admin/entreprises', '/admin/abonnements', '/admin/avis', '/admin/journal']) { await a.goto(base + u); await audit(a, 'admin ' + u); }
   console.log(`\n${total.pages} pages auditées (WCAG 2.1 A/AA) — ${total.violations} type(s) de violation`);
   await b.close();
