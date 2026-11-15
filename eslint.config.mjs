@@ -4,7 +4,8 @@ import nextTs from "eslint-config-next/typescript";
 const config = [
   ...nextVitals,
   ...nextTs,
-  { ignores: [".next/**", "node_modules/**", "next-env.d.ts"] },
+  // tests/audit : scripts Node autonomes (CommonJS) lancés à la main contre un serveur local.
+  { ignores: [".next/**", "node_modules/**", "next-env.d.ts", "tests/audit/**"] },
 ];
 
 export default config;
