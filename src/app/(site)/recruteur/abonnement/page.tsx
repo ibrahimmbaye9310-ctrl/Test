@@ -30,6 +30,9 @@ export default async function SubscriptionPage({ searchParams }: { searchParams:
   const plan = summary?.plan ? PLANS[summary.plan] : null;
   const capacity = (summary?.limit ?? 0) + (summary?.credits_in_use ?? 0) + (summary?.credits_available ?? 0);
   const st = sub?.status ? STATUS[sub.status] : null;
+  const active = summary?.active_offers ?? 0;
+  // Après une résiliation, les annonces déjà en ligne le restent jusqu'à leur expiration.
+  const over = active > capacity;
 
   return (
     <div className="space-y-8">
@@ -57,11 +60,16 @@ export default async function SubscriptionPage({ searchParams }: { searchParams:
         <div className="mt-6">
           <div className="flex items-baseline justify-between text-sm">
             <span className="font-medium text-navy-900">Annonces actives</span>
-            <span className="tabular-nums text-ink-muted">{summary?.active_offers ?? 0} / {capacity}</span>
+            <span className="tabular-nums text-ink-muted">{over ? `${active} en ligne · capacité ${capacity}` : `${active} / ${capacity}`}</span>
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-navy-50" role="progressbar" aria-valuenow={summary?.active_offers ?? 0} aria-valuemin={0} aria-valuemax={capacity} aria-label="Annonces actives">
             <div className={cn("h-full rounded-full", (summary?.active_offers ?? 0) >= capacity ? "bg-warning-600" : "bg-electric-500")} style={{ width: `${capacity ? Math.min(100, ((summary?.active_offers ?? 0) / capacity) * 100) : 0}%` }} />
           </div>
+          {over && (
+            <p className="mt-2 text-xs text-warning-600">
+              Vos annonces déjà en ligne restent visibles jusqu&apos;à leur expiration. Pour en publier de nouvelles, choisissez une formule ou achetez une annonce à l&apos;unité.
+            </p>
+          )}
           <p className="mt-2 text-xs text-ink-subtle">
             {plan ? `${plan.maxActiveOffers} incluses dans votre formule` : "Aucune annonce incluse sans formule"}
             {summary?.credits_available ? ` · ${summary.credits_available} crédit${summary.credits_available > 1 ? "s" : ""} à l'unité disponible${summary.credits_available > 1 ? "s" : ""}` : ""}

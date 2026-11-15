@@ -35,3 +35,11 @@
   immatriculation TVA) puis mettez `STRIPE_AUTOMATIC_TAX=true` : la TVA sera ajoutée et figurera sur les factures.
   Sans Stripe Tax, le montant HT affiché est débité tel quel.
 - Activez l'envoi des reçus et factures par e-mail dans *Paramètres → E-mails clients*.
+
+## Tests
+- Base : 28 vérifications (limites, crédits, mise en avant, idempotence, refus d'une fausse clé) dans `supabase/tests/rls.test.sql`.
+- Bout en bout (mode test Stripe) : 39 vérifications — signature du webhook, Checkout, abonnement Starter réel, limite de
+  3 annonces, achat à l'unité, passage en Pro, échec de paiement, portail client, revenus côté admin, résiliation.
+- Clé de facturation de test : la base n'en garde que l'empreinte (`private.settings`, `billing_key_sha256`).
+  **Avant la mise en production**, supprimez-la : `delete from private.settings where key = 'billing_key_sha256';`
+  (le webhook de production utilise `SUPABASE_SECRET_KEY`).
