@@ -10,7 +10,7 @@ export default function TermsPage() {
       <PageHeader title="Conditions générales d'utilisation" />
       <Prose updatedAt="13 novembre 2026" draft>
         <h2>1. Objet</h2>
-        <p>Les présentes conditions encadrent l&apos;utilisation de JobFinder par les candidats et les recruteurs.</p>
+        <p>Les présentes conditions encadrent l&apos;utilisation de Kairo par les candidats et les recruteurs.</p>
         <h2>2. Comptes</h2>
         <p>
           L&apos;inscription est réservée aux personnes âgées d&apos;au moins 16 ans. Chaque utilisateur est responsable de la
@@ -19,7 +19,7 @@ export default function TermsPage() {
         <h2>3. Annonces</h2>
         <p>
           Les recruteurs s&apos;engagent à publier des offres réelles, licites, non discriminatoires et conformes au Code du
-          travail. JobFinder peut modérer, suspendre ou supprimer toute annonce frauduleuse ou non conforme, et suspendre le
+          travail. Kairo peut modérer, suspendre ou supprimer toute annonce frauduleuse ou non conforme, et suspendre le
           compte concerné.
         </p>
         <h2>4. Services payants</h2>

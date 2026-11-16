@@ -15,19 +15,19 @@ candidature ni un paiement (il est journalisé). Les adresses sont lues par le s
 `server_company_contact`), jamais exposées au navigateur. Les modèles sont testés (`tests/unit/emails.test.ts`).
 
 ## Mise en place
-1. Compte sur [resend.com](https://resend.com) → **Domains → Add Domain** : votre domaine (ex. `jobfinder.fr`, ou un
-   sous-domaine dédié `mail.jobfinder.fr`, recommandé). Ajoutez chez votre registrar les enregistrements DNS affichés
+1. Compte sur [resend.com](https://resend.com) → **Domains → Add Domain** : votre domaine (ex. `kairo.fr`, ou un
+   sous-domaine dédié `mail.kairo.fr`, recommandé). Ajoutez chez votre registrar les enregistrements DNS affichés
    (SPF, DKIM, et DMARC conseillé) puis **Verify**.
 2. **API Keys → Create** : permission *Sending access*, limitée à ce domaine → `RESEND_API_KEY`.
-3. `EMAIL_FROM="JobFinder <notifications@votre-domaine.fr>"` ; laissez `EMAIL_REDIRECT_TO` vide en production.
+3. `EMAIL_FROM="Kairo <notifications@votre-domaine.fr>"` ; laissez `EMAIL_REDIRECT_TO` vide en production.
 4. **E-mails Supabase via Resend** (sinon Supabase n'envoie qu'aux membres de l'équipe, quelques messages par heure) :
    Supabase → *Authentication → Emails → SMTP Settings* → *Enable custom SMTP* :
    - Host `smtp.resend.com`, port `465`, utilisateur `resend`, mot de passe = une clé API Resend
-   - Expéditeur : `notifications@votre-domaine.fr`, nom : `JobFinder`
+   - Expéditeur : `notifications@votre-domaine.fr`, nom : `Kairo`
 5. Supabase → *Authentication → Emails → Templates* : collez le contenu de `supabase/templates/confirm-signup.html`
    (« Confirm signup ») et `reset-password.html` (« Reset password »), avec les sujets :
-   - `Confirmez votre adresse e-mail — JobFinder`
-   - `Réinitialisation de votre mot de passe — JobFinder`
+   - `Confirmez votre adresse e-mail — Kairo`
+   - `Réinitialisation de votre mot de passe — Kairo`
 6. *Authentication → Rate Limits* : relevez la limite d'e-mails par heure une fois le SMTP en place (ex. 100).
 
 ## Tests

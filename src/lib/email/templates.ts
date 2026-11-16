@@ -1,5 +1,5 @@
 /**
- * Modèles d'e-mails transactionnels JobFinder.
+ * Modèles d'e-mails transactionnels Kairo.
  * HTML compatible clients mail (tableaux, styles en ligne, 600 px), version texte, contenu échappé.
  */
 const COLORS = { navy: "#0e1a36", electric: "#3460ff", muted: "#545f78", line: "#e6e9f0", canvas: "#f7f8fb" };
@@ -29,8 +29,8 @@ export function layout({ preheader, title, paragraphs, cta, note, rawUrl }: Layo
 <span style="display:none;max-height:0;overflow:hidden;opacity:0">${escapeHtml(preheader)}</span>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${COLORS.canvas}"><tr><td align="center" style="padding:32px 16px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px">
-<tr><td style="padding:0 8px 20px"><span style="display:inline-block;background:${COLORS.navy};color:#fff;font-weight:700;font-size:15px;border-radius:8px;padding:6px 10px">J</span>
-<span style="font-size:17px;font-weight:700;color:${COLORS.navy};vertical-align:middle;margin-left:8px">JobFinder</span></td></tr>
+<tr><td style="padding:0 8px 20px"><span style="display:inline-block;background:${COLORS.navy};color:#fff;font-weight:700;font-size:15px;border-radius:8px;padding:6px 10px">K</span>
+<span style="font-size:17px;font-weight:700;color:${COLORS.navy};vertical-align:middle;margin-left:8px">Kairo</span></td></tr>
 <tr><td style="background:#ffffff;border:1px solid ${COLORS.line};border-radius:16px;padding:32px">
 <h1 style="margin:0 0 20px;font-size:22px;line-height:1.3;color:${COLORS.navy}">${escapeHtml(title)}</h1>
 ${p}
@@ -38,12 +38,12 @@ ${cta ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margi
 <p style="margin:16px 0 0;font-size:12px;line-height:1.5;color:${COLORS.muted}">Le bouton ne fonctionne pas ? Copiez ce lien : <a href="${url}" style="color:${COLORS.electric};word-break:break-all">${url}</a></p>` : ""}
 ${note ? `<p style="margin:20px 0 0;padding-top:16px;border-top:1px solid ${COLORS.line};font-size:13px;line-height:1.5;color:${COLORS.muted}">${escapeHtml(note)}</p>` : ""}
 </td></tr>
-<tr><td style="padding:20px 8px;font-size:12px;line-height:1.5;color:${COLORS.muted}">JobFinder · Le bon job, au bon moment.<br>Vous recevez cet e-mail car vous avez un compte JobFinder. Gérez vos informations depuis votre espace.</td></tr>
+<tr><td style="padding:20px 8px;font-size:12px;line-height:1.5;color:${COLORS.muted}">Kairo · Le bon job, au bon moment.<br>Vous recevez cet e-mail car vous avez un compte Kairo. Gérez vos informations depuis votre espace.</td></tr>
 </table></td></tr></table></body></html>`;
 }
 
 function text(title: string, paragraphs: string[], cta?: { label: string; url: string }, note?: string) {
-  return [title, "", ...paragraphs, ...(cta ? ["", `${cta.label} : ${cta.url}`] : []), ...(note ? ["", note] : []), "", "— JobFinder · Le bon job, au bon moment."].join("\n");
+  return [title, "", ...paragraphs, ...(cta ? ["", `${cta.label} : ${cta.url}`] : []), ...(note ? ["", note] : []), "", "— Kairo · Le bon job, au bon moment."].join("\n");
 }
 
 function build(subject: string, input: LayoutInput): Email {
@@ -120,7 +120,7 @@ export const templates = {
     }),
 
   subscriptionEnded: (d: { name: string; url: string }) =>
-    build("Votre abonnement JobFinder a pris fin", {
+    build("Votre abonnement Kairo a pris fin", {
       preheader: "Vos annonces en ligne restent visibles jusqu'à leur expiration.",
       title: "Votre abonnement a pris fin",
       paragraphs: [`Bonjour ${d.name},`, "Votre formule a pris fin. Vos annonces déjà en ligne restent visibles jusqu'à leur expiration.", "Vous pouvez reprendre un abonnement à tout moment."],
@@ -129,9 +129,9 @@ export const templates = {
 
   /** Modèles pour Supabase Auth (collés dans Authentication → Emails), variable {{ .ConfirmationURL }}. */
   authConfirmSignup: () =>
-    build("Confirmez votre adresse e-mail — JobFinder", {
-      preheader: "Un clic pour activer votre compte JobFinder.",
-      title: "Bienvenue sur JobFinder",
+    build("Confirmez votre adresse e-mail — Kairo", {
+      preheader: "Un clic pour activer votre compte Kairo.",
+      title: "Bienvenue sur Kairo",
       paragraphs: ["Pour activer votre compte, confirmez votre adresse e-mail. Le lien est valable 24 heures."],
       cta: { label: "Confirmer mon adresse", url: "{{ .ConfirmationURL }}" },
       note: "Si vous n'êtes pas à l'origine de cette inscription, ignorez ce message : aucun compte ne sera activé.",
@@ -139,7 +139,7 @@ export const templates = {
     }),
 
   authResetPassword: () =>
-    build("Réinitialisation de votre mot de passe — JobFinder", {
+    build("Réinitialisation de votre mot de passe — Kairo", {
       preheader: "Choisissez un nouveau mot de passe.",
       title: "Mot de passe oublié ?",
       paragraphs: ["Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe. Le lien est valable 1 heure."],

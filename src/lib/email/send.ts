@@ -18,7 +18,7 @@ export async function sendEmail(to: string | null | undefined, email: Email, tag
   const redirect = process.env.EMAIL_REDIRECT_TO;
   try {
     const { data, error } = await client.emails.send({
-      from: process.env.EMAIL_FROM ?? "JobFinder <onboarding@resend.dev>",
+      from: process.env.EMAIL_FROM ?? "Kairo <onboarding@resend.dev>",
       to: redirect || to,
       subject: redirect ? `[test → ${to}] ${email.subject}` : email.subject,
       html: email.html,

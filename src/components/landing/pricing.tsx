@@ -67,7 +67,7 @@ export function Pricing() {
         />
         <PricingCards className="mx-auto mt-14 max-w-5xl" />
         <p className="mt-8 text-center text-xs text-ink-subtle">
-          Prix hors taxes. Paiement sécurisé par Stripe — JobFinder ne stocke jamais vos données bancaires.
+          Prix hors taxes. Paiement sécurisé par Stripe — Kairo ne stocke jamais vos données bancaires.
         </p>
       </div>
     </section>

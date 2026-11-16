@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Crée (ou retrouve) les produits, prix et la configuration du portail client JobFinder dans Stripe.
+ * Crée (ou retrouve) les produits, prix et la configuration du portail client Kairo dans Stripe.
  * Ré-exécutable : les prix sont identifiés par leur « lookup key ».
  *
  * Usage :  STRIPE_SECRET_KEY=sk_test_… node scripts/stripe-setup.mjs
@@ -17,10 +17,11 @@ const stripe = new Stripe(key, { httpClient: Stripe.createFetchHttpClient() });
 const live = key.startsWith("sk_live_");
 console.log(`Mode ${live ? "PRODUCTION (live)" : "TEST"}\n`);
 
+// Les « lookup keys » gardent le préfixe historique jobfinder_ : ce sont des identifiants techniques déjà créés.
 const ITEMS = [
-  { env: "STRIPE_PRICE_STARTER", lookup: "jobfinder_starter_monthly", product: "JobFinder Starter", description: "3 annonces actives, gestion des candidatures, profil entreprise.", amount: 2900, recurring: { interval: "month" } },
-  { env: "STRIPE_PRICE_PRO", lookup: "jobfinder_pro_monthly", product: "JobFinder Pro", description: "10 annonces actives, mise en avant, statistiques avancées.", amount: 5900, recurring: { interval: "month" } },
-  { env: "STRIPE_PRICE_SINGLE_OFFER", lookup: "jobfinder_single_offer", product: "JobFinder — Annonce à l'unité", description: "Publication d'une annonce pendant 30 jours.", amount: 990 },
+  { env: "STRIPE_PRICE_STARTER", lookup: "jobfinder_starter_monthly", product: "Kairo Starter", description: "3 annonces actives, gestion des candidatures, profil entreprise.", amount: 2900, recurring: { interval: "month" } },
+  { env: "STRIPE_PRICE_PRO", lookup: "jobfinder_pro_monthly", product: "Kairo Pro", description: "10 annonces actives, mise en avant, statistiques avancées.", amount: 5900, recurring: { interval: "month" } },
+  { env: "STRIPE_PRICE_SINGLE_OFFER", lookup: "jobfinder_single_offer", product: "Kairo — Annonce à l'unité", description: "Publication d'une annonce pendant 30 jours.", amount: 990 },
 ];
 
 const prices = {};
@@ -28,7 +29,7 @@ for (const item of ITEMS) {
   const existing = await stripe.prices.list({ lookup_keys: [item.lookup], active: true, limit: 1 });
   let price = existing.data[0];
   if (!price) {
-    const product = await stripe.products.create({ name: item.product, description: item.description, metadata: { app: "jobfinder" } });
+    const product = await stripe.products.create({ name: item.product, description: item.description, metadata: { app: "kairo" } });
     price = await stripe.prices.create({
       product: product.id,
       currency: "eur",
@@ -39,7 +40,9 @@ for (const item of ITEMS) {
     });
     console.log(`✔ créé    ${item.product} — ${item.amount / 100} € HT`);
   } else {
-    console.log(`✔ existant ${item.product}`);
+    // Prix existant : on aligne le nom et la description du produit (ex. après un changement de marque).
+    await stripe.products.update(typeof price.product === "string" ? price.product : price.product.id, { name: item.product, description: item.description });
+    console.log(`✔ existant ${item.product} (nom mis à jour)`);
   }
   prices[item.env] = price;
 }
@@ -61,7 +64,7 @@ const features = {
     ],
   },
 };
-const business_profile = { headline: "JobFinder — gérez votre abonnement" };
+const business_profile = { headline: "Kairo — gérez votre abonnement" };
 if (configs.data[0]) {
   await stripe.billingPortal.configurations.update(configs.data[0].id, { features, business_profile });
   console.log("✔ portail client mis à jour");

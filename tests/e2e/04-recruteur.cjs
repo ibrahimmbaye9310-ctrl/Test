@@ -10,7 +10,7 @@ let failures = 0;
 const ok = (c, m) => { console.log((c ? '✅ ' : '❌ ') + m); if (!c) failures++; };
 const sb = () => createClient(URL_, KEY, { auth: { persistSession: false } });
 const TITLE = `Serveur E2E ${ts}`;
-fs.writeFileSync(require('path').resolve(require('os').tmpdir(), 'jobfinder-logo.png'), Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAEBgIApD5fRAAAAABJRU5ErkJggg==', 'base64'));
+fs.writeFileSync(require('path').resolve(require('os').tmpdir(), 'kairo-logo.png'), Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAEBgIApD5fRAAAAABJRU5ErkJggg==', 'base64'));
 
 (async () => {
   const b = await chromium.launch();
@@ -31,9 +31,9 @@ fs.writeFileSync(require('path').resolve(require('os').tmpdir(), 'jobfinder-logo
   await r.click('#informations button[type=submit]'); await r.waitForURL(/\/recruteur\?bienvenue=1/, { timeout: 15000 }).catch(() => {});
   ok(r.url().includes('bienvenue'), 'Entreprise créée → tableau de bord');
   await r.goto(base + '/recruteur/entreprise');
-  await r.locator('#logo input[type=file]').setInputFiles(require('path').resolve(require('os').tmpdir(), 'jobfinder-faux.pdf'));
+  await r.locator('#logo input[type=file]').setInputFiles(require('path').resolve(require('os').tmpdir(), 'kairo-faux.pdf'));
   ok(await see(r, 'Format non accepté'), 'Logo : fichier non image refusé');
-  await r.locator('#logo input[type=file]').setInputFiles(require('path').resolve(require('os').tmpdir(), 'jobfinder-logo.png'));
+  await r.locator('#logo input[type=file]').setInputFiles(require('path').resolve(require('os').tmpdir(), 'kairo-logo.png'));
   ok(await see(r, 'Logo enregistré'), 'Logo enregistré');
   ok((await r.locator('#logo img').getAttribute('src') || '').includes('/storage/v1/object/public/logos/'), 'Logo servi depuis le stockage public');
 
@@ -93,7 +93,7 @@ fs.writeFileSync(require('path').resolve(require('os').tmpdir(), 'jobfinder-logo
   await c.click('main button[type=submit]'); await c.waitForURL(/\/espace/, { timeout: 15000 });
   await c.goto(base + '/espace/profil');
   await c.fill('#phone', '07 00 00 00 00'); await c.fill('#headline', 'Étudiante en BTS MHR'); await c.locator('#informations button[type=submit]').click(); await see(c, 'Modifications enregistrées');
-  await c.locator('#cv input[type=file]').setInputFiles(require('path').resolve(require('os').tmpdir(), 'jobfinder-cv.pdf')); await see(c, 'CV enregistré', 15000);
+  await c.locator('#cv input[type=file]').setInputFiles(require('path').resolve(require('os').tmpdir(), 'kairo-cv.pdf')); await see(c, 'CV enregistré', 15000);
   await c.goto(base + `/offres/${pub.slug}`);
   await c.getByRole('button', { name: 'Postuler' }).click(); await c.fill('#coverMessage', 'Disponible les soirs et week-ends.');
   await c.getByRole('button', { name: 'Envoyer ma candidature' }).click();

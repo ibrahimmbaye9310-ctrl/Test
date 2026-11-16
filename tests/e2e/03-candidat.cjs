@@ -10,10 +10,10 @@ let failures = 0;
 const ok = (c, m) => { console.log((c ? '✅ ' : '❌ ') + m); if (!c) failures++; };
 const sb = () => createClient(URL_, KEY, { auth: { persistSession: false } });
 const dir = __dirname;
-fs.writeFileSync(require('path').resolve(require('os').tmpdir(), 'jobfinder-cv.pdf'), '%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[]/Count 0>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n');
-fs.writeFileSync(require('path').resolve(require('os').tmpdir(), 'jobfinder-faux.pdf'), Buffer.from([0x4d, 0x5a, 0x90, 0, 3, 0, 0, 0, 4, 0, 0, 0, 0xff, 0xff, 0, 0]));
-fs.writeFileSync(require('path').resolve(require('os').tmpdir(), 'jobfinder-photo.png'), Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64'));
-fs.writeFileSync(require('path').resolve(require('os').tmpdir(), 'jobfinder-accounts.json'), JSON.stringify({ cand, cand2, rec }));
+fs.writeFileSync(require('path').resolve(require('os').tmpdir(), 'kairo-cv.pdf'), '%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[]/Count 0>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n');
+fs.writeFileSync(require('path').resolve(require('os').tmpdir(), 'kairo-faux.pdf'), Buffer.from([0x4d, 0x5a, 0x90, 0, 3, 0, 0, 0, 4, 0, 0, 0, 0xff, 0xff, 0, 0]));
+fs.writeFileSync(require('path').resolve(require('os').tmpdir(), 'kairo-photo.png'), Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64'));
+fs.writeFileSync(require('path').resolve(require('os').tmpdir(), 'kairo-accounts.json'), JSON.stringify({ cand, cand2, rec }));
 fs.appendFileSync(require('path').resolve(__dirname, '.accounts.log'), [cand, cand2, rec].join('\n') + '\n');
 const TITLE = `Vendeur E2E ${ts}`;
 
@@ -63,11 +63,11 @@ const TITLE = `Vendeur E2E ${ts}`;
   ok(await p.locator('#preferences').getByText('Modifications enregistrées').isVisible(), 'Préférences enregistrées');
 
   // fichiers
-  await p.locator('#cv input[type=file]').setInputFiles(require('path').resolve(require('os').tmpdir(), 'jobfinder-faux.pdf'));
+  await p.locator('#cv input[type=file]').setInputFiles(require('path').resolve(require('os').tmpdir(), 'kairo-faux.pdf'));
   ok(await p.locator('#cv').getByText('Format non accepté').waitFor({ timeout: 10000 }).then(() => true, () => false), 'CV : faux PDF (exécutable renommé) refusé');
-  await p.locator('#cv input[type=file]').setInputFiles(require('path').resolve(require('os').tmpdir(), 'jobfinder-cv.pdf'));
+  await p.locator('#cv input[type=file]').setInputFiles(require('path').resolve(require('os').tmpdir(), 'kairo-cv.pdf'));
   ok(await p.locator('#cv').getByText('CV enregistré').waitFor({ timeout: 15000 }).then(() => true, () => false), 'CV : vrai PDF enregistré');
-  await p.locator('#photo input[type=file]').setInputFiles(require('path').resolve(require('os').tmpdir(), 'jobfinder-photo.png'));
+  await p.locator('#photo input[type=file]').setInputFiles(require('path').resolve(require('os').tmpdir(), 'kairo-photo.png'));
   ok(await p.locator('#photo').getByText('Photo enregistrée').waitFor({ timeout: 15000 }).then(() => true, () => false), 'Photo enregistrée');
   await p.reload();
   ok(await p.locator('#cv').getByText('cv.pdf').isVisible(), 'CV affiché après rechargement');
@@ -115,7 +115,7 @@ const TITLE = `Vendeur E2E ${ts}`;
   await p.getByRole('button', { name: "Enregistrer l'offre" }).click();
   ok(await waitText('Offre enregistrée'), 'Favori ajouté');
   await p.getByRole('button', { name: 'Postuler' }).click();
-  ok(await p.getByText('CV joint : jobfinder-cv.pdf').isVisible(), 'Candidature : CV du profil joint');
+  ok(await p.getByText('CV joint : kairo-cv.pdf').isVisible(), 'Candidature : CV du profil joint');
   await p.fill('#coverMessage', 'Bonjour, je suis disponible le week-end.');
   await p.getByRole('button', { name: 'Envoyer ma candidature' }).click();
   ok(await waitText('Candidature envoyée'), 'Candidature envoyée');
@@ -186,7 +186,7 @@ const TITLE = `Vendeur E2E ${ts}`;
   const { data: left } = await A.from('public_job_offers').select('id').eq('id', offer.id);
   ok(!delErr && left.length === 0 && removed.length === 2, `Nettoyage : offre de test supprimée, ${removed.length} fichier(s) supprimé(s)`);
 
-  fs.writeFileSync(require('path').resolve(require('os').tmpdir(), 'jobfinder-state.json'), JSON.stringify({ offerId: offer.id, slug, candidateId: apps[0].candidate_id }));
+  fs.writeFileSync(require('path').resolve(require('os').tmpdir(), 'kairo-state.json'), JSON.stringify({ offerId: offer.id, slug, candidateId: apps[0].candidate_id }));
   ok(jsErrors.length === 0, 'Aucune erreur JavaScript ' + jsErrors.join(' | '));
   console.log(`\n${failures === 0 ? 'TOUT EST VERT' : failures + ' ÉCHEC(S)'}`);
   await b.close();

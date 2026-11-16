@@ -63,7 +63,7 @@ export async function emailBilling(companyId: string, e: BillingEmail) {
     case "single_offer":
       return sendEmail(c.email, templates.singleOfferPurchased({ name, url: url("/recruteur/offres/nouvelle") }), "single_offer");
     case "renewed":
-      return sendEmail(c.email, templates.subscriptionRenewed({ name, plan: e.plan ? PLANS[e.plan].name : "JobFinder", amount: formatPrice(e.amountCents), url: billing }), "subscription_renewed");
+      return sendEmail(c.email, templates.subscriptionRenewed({ name, plan: e.plan ? PLANS[e.plan].name : "Kairo", amount: formatPrice(e.amountCents), url: billing }), "subscription_renewed");
     case "payment_failed":
       return sendEmail(c.email, templates.paymentFailed({ name, amount: formatPrice(e.amountCents), url: billing }), "payment_failed");
     case "ended":

@@ -1,4 +1,4 @@
-# JobFinder
+# Kairo
 
 **Le bon job, au bon moment.** Plateforme SaaS de recrutement qui met en relation étudiants, candidats (CDI, CDD, temps partiel) et entreprises, en commençant par l'Île-de-France.
 

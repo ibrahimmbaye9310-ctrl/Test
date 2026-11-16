@@ -4,15 +4,15 @@ import { SectionHeading } from "@/components/ui/misc";
 
 export const FAQ_ITEMS = [
   {
-    q: "JobFinder est-il gratuit pour les candidats ?",
+    q: "Kairo est-il gratuit pour les candidats ?",
     a: "Oui. Créer un profil, rechercher des offres, enregistrer des favoris, postuler et suivre vos candidatures est entièrement gratuit.",
   },
   {
     q: "Je suis étudiant·e, puis-je trouver un job compatible avec mes cours ?",
-    a: "C'est l'une des raisons d'être de JobFinder. Filtrez par « Emploi étudiant », temps partiel et horaires (soirée, week-end…), et indiquez vos disponibilités dans votre profil.",
+    a: "C'est l'une des raisons d'être de Kairo. Filtrez par « Emploi étudiant », temps partiel et horaires (soirée, week-end…), et indiquez vos disponibilités dans votre profil.",
   },
   {
-    q: "Dans quelles villes JobFinder est-il disponible ?",
+    q: "Dans quelles villes Kairo est-il disponible ?",
     a: "Nous lançons la plateforme en Île-de-France (Paris et les sept départements de la région). L'ouverture au reste de la France est prévue dans un second temps.",
   },
   {

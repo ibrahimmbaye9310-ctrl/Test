@@ -3,7 +3,7 @@ import Stripe from "stripe";
 
 /**
  * Stripe côté serveur uniquement. La clé secrète ne quitte jamais le serveur ; aucune donnée de carte
- * ne transite par JobFinder (paiement sur les pages hébergées par Stripe).
+ * ne transite par Kairo (paiement sur les pages hébergées par Stripe).
  */
 export const isStripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
 
@@ -11,7 +11,7 @@ let client: Stripe | null = null;
 export function stripe() {
   if (!process.env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY manquante.");
   // Client HTTP basé sur fetch : compatible avec tous les environnements (Vercel, proxys d'entreprise).
-  client ??= new Stripe(process.env.STRIPE_SECRET_KEY, { appInfo: { name: "JobFinder" }, maxNetworkRetries: 2, httpClient: Stripe.createFetchHttpClient() });
+  client ??= new Stripe(process.env.STRIPE_SECRET_KEY, { appInfo: { name: "Kairo" }, maxNetworkRetries: 2, httpClient: Stripe.createFetchHttpClient() });
   return client;
 }
 

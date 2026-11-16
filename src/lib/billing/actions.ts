@@ -32,7 +32,7 @@ async function ensureCustomer(company: { id: string; name: string }, email: stri
   return customer.id;
 }
 
-/** Démarre un paiement sur la page sécurisée de Stripe (aucune donnée bancaire ne transite par JobFinder). */
+/** Démarre un paiement sur la page sécurisée de Stripe (aucune donnée bancaire ne transite par Kairo). */
 export async function startCheckoutAction(purchase: Purchase): Promise<ActionState> {
   const { user, company } = await recruiterCompany();
   if (!isStripeConfigured || !PRICE_IDS[purchase]) return { error: "Le paiement en ligne n'est pas encore activé. Réessayez plus tard." };

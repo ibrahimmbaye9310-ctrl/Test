@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth/session";
 import { signedFileUrl } from "@/lib/candidate/queries";
 import { countUnread } from "@/lib/notifications/queries";
 
-export const metadata: Metadata = { title: { default: "Mon espace", template: "%s · Mon espace JobFinder" }, robots: { index: false } };
+export const metadata: Metadata = { title: { default: "Mon espace", template: "%s · Mon espace Kairo" }, robots: { index: false } };
 
 export default async function EspaceLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser(["candidate"]);

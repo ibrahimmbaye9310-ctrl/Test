@@ -24,7 +24,7 @@ export function ForCompanies() {
               Recrutez les bons profils, sans perdre de temps.
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-navy-200">
-              Commerces, restaurants, entrepôts, startups : JobFinder vous connecte aux candidats disponibles quand vous en
+              Commerces, restaurants, entrepôts, startups : Kairo vous connecte aux candidats disponibles quand vous en
               avez besoin.
             </p>
             <ul className="mt-8 space-y-3">

@@ -10,7 +10,7 @@
 - Une annonce est **active** si elle est en ligne (non expirée) ou en vérification.
 - La limite est **contrôlée par la base** à chaque publication (trigger `enforce_offer_quota`) : impossible à contourner.
   Formule pleine → un crédit « à l'unité » est consommé automatiquement s'il en reste ; sinon la publication est refusée.
-- Le paiement se fait sur les pages hébergées par Stripe (Checkout, portail client) : **aucune donnée bancaire chez JobFinder**.
+- Le paiement se fait sur les pages hébergées par Stripe (Checkout, portail client) : **aucune donnée bancaire chez Kairo**.
 - Les abonnements, paiements et crédits ne sont écrits que par le **webhook** (signature vérifiée, événements traités une seule fois).
 - `past_due` (relance après un échec de paiement) : la formule reste active pendant les relances de Stripe.
 

@@ -126,7 +126,7 @@ const synthetic = (type, object) => ({ id: `evt_test_${ts}_${Math.random().toStr
   ok(await anon.getByText('À la une').count() >= 1, 'Recherche publique : badge « À la une »');
 
   // ── Échec de paiement
-  const failedInvoice = { id: `in_test_${ts}`, object: 'invoice', customer, amount_due: 5900, amount_paid: 0, currency: 'eur', billing_reason: 'subscription_cycle', lines: { data: [{ description: 'JobFinder Pro' }] } };
+  const failedInvoice = { id: `in_test_${ts}`, object: 'invoice', customer, amount_due: 5900, amount_paid: 0, currency: 'eur', billing_reason: 'subscription_cycle', lines: { data: [{ description: 'Kairo Pro' }] } };
   ok((await deliver(synthetic('invoice.payment_failed', failedInvoice))).status === 200, 'Webhook : échec de paiement');
   await r.goto(base + '/recruteur/notifications'); ok(await see('Échec du paiement de votre abonnement'), 'Recruteur notifié de l\'échec de paiement');
   await r.goto(base + '/recruteur/abonnement'); ok(await see('Échec'), 'Historique : paiement en échec visible');

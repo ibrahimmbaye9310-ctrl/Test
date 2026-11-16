@@ -19,11 +19,11 @@ const rows = [
 export default function PrivacyPage() {
   return (
     <>
-      <PageHeader title="Politique de confidentialité" description="Comment JobFinder collecte, utilise et protège vos données personnelles." />
+      <PageHeader title="Politique de confidentialité" description="Comment Kairo collecte, utilise et protège vos données personnelles." />
       <Prose updatedAt="15 novembre 2026" draft>
         <h2>Responsable du traitement</h2>
         <p>
-          [Raison sociale], [adresse], est responsable du traitement des données collectées sur JobFinder. Pour toute
+          [Raison sociale], [adresse], est responsable du traitement des données collectées sur Kairo. Pour toute
           question ou demande : <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>.
         </p>
         <h2>Données traitées, finalités et durées</h2>
@@ -45,7 +45,7 @@ export default function PrivacyPage() {
           <li>Nos sous-traitants techniques : Vercel (hébergement), Supabase (base de données, authentification, fichiers), Stripe (paiements des recruteurs), Resend (e-mails transactionnels).</li>
         </ul>
         <p>
-          Les données bancaires sont traitées exclusivement par Stripe et ne sont jamais stockées par JobFinder. Certains
+          Les données bancaires sont traitées exclusivement par Stripe et ne sont jamais stockées par Kairo. Certains
           sous-traitants étant établis aux États-Unis, les transferts sont encadrés par les clauses contractuelles types de la
           Commission européenne et/ou le Data Privacy Framework.
         </p>
@@ -60,7 +60,7 @@ export default function PrivacyPage() {
         </p>
         <h2 id="cookies">Cookies</h2>
         <p>
-          JobFinder n&apos;utilise <strong>aucun cookie publicitaire ni de mesure d&apos;audience</strong>. Seuls des éléments
+          Kairo n&apos;utilise <strong>aucun cookie publicitaire ni de mesure d&apos;audience</strong>. Seuls des éléments
           strictement nécessaires au service sont déposés ; ils sont exemptés de consentement (article 82 de la loi
           Informatique et Libertés), c&apos;est pourquoi aucun bandeau ne vous est présenté :
         </p>

@@ -35,7 +35,7 @@ Dashboard → **Project Settings → API Keys**.
 Dashboard → **Authentication**.
 
 **URL Configuration**
-- *Site URL* : l'adresse du site (`http://localhost:3000` en local, puis votre domaine, ex. `https://jobfinder.fr`).
+- *Site URL* : l'adresse du site (`http://localhost:3000` en local, puis votre domaine, ex. `https://kairo.fr`).
 - *Redirect URLs* : ajoutez `http://localhost:3000/auth/confirm` et `https://<votre-domaine>/auth/confirm`
   (et l'URL Vercel de production si vous l'utilisez).
 
@@ -46,22 +46,22 @@ Dashboard → **Authentication**.
 
 **Emails → Templates** (versions françaises — remplacez sujet et contenu)
 
-*Confirm signup* — sujet : `Confirmez votre adresse e-mail — JobFinder`
+*Confirm signup* — sujet : `Confirmez votre adresse e-mail — Kairo`
 ```html
-<h2>Bienvenue sur JobFinder</h2>
+<h2>Bienvenue sur Kairo</h2>
 <p>Pour activer votre compte, confirmez votre adresse e-mail :</p>
 <p><a href="{{ .ConfirmationURL }}">Confirmer mon adresse</a></p>
 <p>Si vous n'êtes pas à l'origine de cette inscription, ignorez ce message.</p>
-<p>— L'équipe JobFinder · Le bon job, au bon moment.</p>
+<p>— L'équipe Kairo · Le bon job, au bon moment.</p>
 ```
 
-*Reset password* — sujet : `Réinitialisation de votre mot de passe — JobFinder`
+*Reset password* — sujet : `Réinitialisation de votre mot de passe — Kairo`
 ```html
 <h2>Mot de passe oublié ?</h2>
 <p>Cliquez sur le lien ci-dessous pour choisir un nouveau mot de passe. Il est valable 1 heure.</p>
 <p><a href="{{ .ConfirmationURL }}">Choisir un nouveau mot de passe</a></p>
 <p>Si vous n'avez rien demandé, ignorez ce message : votre mot de passe reste inchangé.</p>
-<p>— L'équipe JobFinder</p>
+<p>— L'équipe Kairo</p>
 ```
 
 > ⚠️ **Envoi des e-mails** : le service d'e-mail intégré de Supabase est très limité (quelques messages par heure,

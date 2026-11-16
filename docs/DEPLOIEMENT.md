@@ -4,7 +4,7 @@ Durée : environ 45 minutes la première fois. Ordre conseillé : domaine → Ve
 
 ## 0. Prérequis
 - Le dépôt GitHub `ibrahimmbaye9310-ctrl/Test` (branche de production : voir étape 2).
-- Un **nom de domaine** (ex. `jobfinder.fr`) : OVH, Gandi, Cloudflare… ou acheté directement dans Vercel.
+- Un **nom de domaine** (ex. `kairo.fr`) : OVH, Gandi, Cloudflare… ou acheté directement dans Vercel.
 - Les comptes Supabase (projet **Jobfinder**, `eu-west-1`), Stripe et Resend déjà utilisés en test.
 
 ## 1. Générer le secret de limitation
@@ -29,7 +29,7 @@ Elle sert de `RATE_LIMIT_SECRET` ; ne la réutilisez nulle part ailleurs.
 | `STRIPE_PRICE_STARTER` / `STRIPE_PRICE_PRO` / `STRIPE_PRICE_SINGLE_OFFER` | sortie de `scripts/stripe-setup.mjs` |
 | `STRIPE_AUTOMATIC_TAX` | `true` une fois Stripe Tax configuré, sinon `false` |
 | `RESEND_API_KEY` | clé Resend *Sending access* limitée au domaine |
-| `EMAIL_FROM` | `JobFinder <notifications@votre-domaine.fr>` |
+| `EMAIL_FROM` | `Kairo <notifications@votre-domaine.fr>` |
 
 **Ne définissez pas** `EMAIL_REDIRECT_TO`, `BILLING_KEY` ni `NEXT_PUBLIC_ENABLE_DEMO_DATA` en production.
 Au démarrage, le serveur journalise `[config] configuration complète` ou la liste de ce qui manque (*Vercel → Logs*).

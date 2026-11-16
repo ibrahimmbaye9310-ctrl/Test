@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { escapeHtml, templates } from "@/lib/email/templates";
 
-const url = "https://jobfinder.fr/espace/candidatures";
+const url = "https://kairo.fr/espace/candidatures";
 
 describe("modèles d'e-mails", () => {
   it("échappe tout contenu saisi par les utilisateurs", () => {

@@ -38,7 +38,7 @@ export default async function SubscriptionPage({ searchParams }: { searchParams:
     <div className="space-y-8">
       <header>
         <h1 className="text-2xl font-semibold sm:text-3xl">Abonnement</h1>
-        <p className="mt-1.5 text-ink-muted">Paiements sécurisés par Stripe. JobFinder ne voit ni ne stocke vos données bancaires.</p>
+        <p className="mt-1.5 text-ink-muted">Paiements sécurisés par Stripe. Kairo ne voit ni ne stocke vos données bancaires.</p>
       </header>
       {paiement === "ok" && <Callout>Paiement reçu, merci ! L&apos;activation prend quelques secondes : actualisez la page si votre formule n&apos;apparaît pas encore.</Callout>}
       {paiement === "annule" && <Callout tone="warning">Paiement annulé : aucun montant n&apos;a été débité.</Callout>}

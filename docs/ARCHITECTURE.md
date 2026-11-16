@@ -1,4 +1,4 @@
-# JobFinder — Architecture
+# Kairo — Architecture
 
 > « Le bon job, au bon moment. » Plateforme SaaS de recrutement, lancement en Île-de-France.
 

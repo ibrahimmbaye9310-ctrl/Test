@@ -1,8 +1,8 @@
 {
-  "name": "jobfinder",
+  "name": "kairo",
   "version": "0.1.0",
   "private": true,
-  "description": "JobFinder — Le bon job, au bon moment. Plateforme SaaS de recrutement.",
+  "description": "Kairo — Le bon job, au bon moment. Plateforme SaaS de recrutement.",
   "engines": {
     "node": ">=20.9.0"
   },

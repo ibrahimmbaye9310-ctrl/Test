@@ -90,7 +90,7 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<"processed
         // Libellé en français (la description de Stripe est générée en anglais).
         const line = inv.lines.data[0] as { pricing?: { price_details?: { price?: string } }; price?: { id: string } | null } | undefined;
         const plan = planFromPrice(line?.pricing?.price_details?.price ?? line?.price?.id);
-        const label = plan ? `Abonnement ${PLAN_LABEL[plan]} (mensuel)` : "Abonnement JobFinder";
+        const label = plan ? `Abonnement ${PLAN_LABEL[plan]} (mensuel)` : "Abonnement Kairo";
         await must(db.rpc("billing_record_payment", { company, payment_kind: "subscription", reference: inv.id, amount: ok ? inv.amount_paid : inv.amount_due, cur: inv.currency, payment_status: ok ? "succeeded" : "failed", label }));
         if (!ok) {
           await must(db.rpc("billing_notify", { company, kind: "subscription", title: "Échec du paiement de votre abonnement", body: "Mettez à jour votre moyen de paiement depuis la page Abonnement pour conserver votre formule." }));
