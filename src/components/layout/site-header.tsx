@@ -3,9 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { LogOut, Menu, UserRound, X } from "lucide-react";
+import type { Session } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { signOutAction } from "@/lib/auth/actions";
 import { Logo } from "@/components/ui/logo";
-import { ButtonLink } from "@/components/ui/button";
+import { ButtonLink, buttonClasses } from "@/components/ui/button";
 import { mainNav } from "@/lib/config/site";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +17,10 @@ export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const session = useSession();
+  // Le rôle sert uniquement à choisir le lien affiché ; chaque espace revérifie le rôle côté serveur.
+  const role = session?.user.user_metadata?.role;
+  const spaceHref = role === "recruiter" ? "/recruteur" : "/espace";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -68,12 +76,27 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <ButtonLink href="/connexion" variant="ghost">
-            Connexion
-          </ButtonLink>
-          <ButtonLink href="/inscription" variant="dark">
-            Inscription
-          </ButtonLink>
+          {session ? (
+            <>
+              <ButtonLink href={spaceHref} variant="dark">
+                <UserRound aria-hidden /> Mon espace
+              </ButtonLink>
+              <form action={signOutAction}>
+                <button type="submit" className={buttonClasses({ variant: "ghost", size: "icon" })} aria-label="Se déconnecter" title="Se déconnecter">
+                  <LogOut aria-hidden />
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <ButtonLink href="/connexion" variant="ghost">
+                Connexion
+              </ButtonLink>
+              <ButtonLink href="/inscription" variant="dark">
+                Inscription
+              </ButtonLink>
+            </>
+          )}
         </div>
 
         <button
@@ -102,16 +125,44 @@ export function SiteHeader() {
               </Link>
             ))}
             <div className="mt-4 grid gap-2 border-t border-line pt-5">
-              <ButtonLink href="/inscription" variant="dark" size="lg">
-                Créer un compte
-              </ButtonLink>
-              <ButtonLink href="/connexion" variant="secondary" size="lg">
-                Connexion
-              </ButtonLink>
+              {session ? (
+                <>
+                  <ButtonLink href={spaceHref} variant="dark" size="lg">
+                    Mon espace
+                  </ButtonLink>
+                  <form action={signOutAction} className="grid">
+                    <button type="submit" className={buttonClasses({ variant: "secondary", size: "lg" })}>
+                      Se déconnecter
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <ButtonLink href="/inscription" variant="dark" size="lg">
+                    Créer un compte
+                  </ButtonLink>
+                  <ButtonLink href="/connexion" variant="secondary" size="lg">
+                    Connexion
+                  </ButtonLink>
+                </>
+              )}
             </div>
           </nav>
         </div>
       )}
     </header>
   );
+}
+
+/** Session lue côté navigateur (cookie) : les pages publiques restent statiques et rapides. */
+function useSession() {
+  const [session, setSession] = useState<Session | null>(null);
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    const { data } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
+    return () => data.subscription.unsubscribe();
+  }, []);
+  return session;
 }

@@ -19,7 +19,8 @@ export function Hero() {
       <div className="pointer-events-none absolute -top-40 left-1/2 h-[480px] w-[900px] -translate-x-1/2 rounded-full bg-electric-400/15 blur-3xl" aria-hidden />
 
       <div className="container-page relative grid items-center gap-14 pb-20 pt-14 sm:pt-20 lg:grid-cols-[1.15fr_1fr] lg:pb-28">
-        <div className="animate-fade-up">
+        {/* Pas d'animation d'entrée sur le bloc titre : il s'affiche dès le premier rendu (LCP). */}
+        <div>
           <Link
             href="/offres"
             className="inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1 text-xs font-medium text-navy-700 shadow-xs ring-1 ring-line transition hover:ring-line-strong"

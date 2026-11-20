@@ -15,13 +15,13 @@ const columns = [
   {
     title: "Entreprises",
     links: [
-      { href: "/entreprises", label: "Recruter avec JobFinder" },
+      { href: "/entreprises", label: "Recruter avec Kairo" },
       { href: "/tarifs", label: "Tarifs" },
       { href: "/inscription?role=recruteur", label: "Créer un compte entreprise" },
     ],
   },
   {
-    title: "JobFinder",
+    title: "Kairo",
     links: [
       { href: "/contact", label: "Contact" },
       { href: "/#faq", label: "Questions fréquentes" },
@@ -32,6 +32,7 @@ const columns = [
     links: [
       { href: "/mentions-legales", label: "Mentions légales" },
       { href: "/confidentialite", label: "Politique de confidentialité" },
+      { href: "/confidentialite#cookies", label: "Cookies" },
       { href: "/cgu", label: "Conditions d'utilisation" },
     ],
   },
@@ -65,7 +66,7 @@ export function SiteFooter() {
           ))}
         </div>
         <div className="mt-12 flex flex-col gap-3 border-t border-line pt-6 text-xs text-ink-subtle sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} JobFinder. Tous droits réservés.</p>
+          <p>© {new Date().getFullYear()} Kairo. Tous droits réservés.</p>
           <p>Conçu en Île-de-France · Données hébergées dans l&apos;Union européenne</p>
         </div>
       </div>

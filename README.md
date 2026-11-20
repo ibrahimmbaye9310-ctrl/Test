@@ -1,4 +1,4 @@
-# JobFinder
+# Kairo
 
 **Le bon job, au bon moment.** Plateforme SaaS de recrutement qui met en relation étudiants, candidats (CDI, CDD, temps partiel) et entreprises, en commençant par l'Île-de-France.
 
@@ -22,15 +22,35 @@ npm run dev                  # http://localhost:3000
 | `npm run build` / `npm start` | Build et serveur de production |
 | `npm run typecheck` | Vérification TypeScript |
 | `npm run lint` | ESLint (règles Next.js + Core Web Vitals) |
-| `npm run check` | Les trois à la suite (à lancer avant chaque commit) |
+| `npm run test` | Tests unitaires (Vitest) |
+| `npm run check` | Typage, lint, tests et build (à lancer avant chaque commit) |
 
 ## Variables d'environnement
-Voir [`.env.example`](.env.example). Aucune clé secrète ne doit être commitée. Les services externes (Supabase, Stripe, Resend) seront configurés aux phases 3, 7 et 8, avec un guide pas à pas.
+Voir [`.env.example`](.env.example). Aucune clé secrète ne doit être commitée.
+- Supabase (base, comptes, fichiers) : [`docs/SUPABASE.md`](docs/SUPABASE.md)
+- Stripe et Resend : phases 7 et 8.
+
+## Tests
+Voir [`docs/TESTS.md`](docs/TESTS.md) : 58 tests unitaires, 155 vérifications de la base (RLS), 224 vérifications de
+bout en bout, audit d'accessibilité (35 pages, 0 violation). L'intégration continue GitHub rejoue l'essentiel à chaque push.
+
+## Documentation
+| Guide | Contenu |
+|---|---|
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture, modèle de données, recherche |
+| [`docs/SUPABASE.md`](docs/SUPABASE.md) | Base, migrations, authentification, administrateur |
+| [`docs/STRIPE.md`](docs/STRIPE.md) | Formules, paiements, webhook, TVA |
+| [`docs/EMAILS.md`](docs/EMAILS.md) | E-mails transactionnels, domaine, SMTP |
+| [`docs/SECURITY.md`](docs/SECURITY.md) | Mesures de sécurité et RGPD |
+| [`docs/DEPLOIEMENT.md`](docs/DEPLOIEMENT.md) | Mise en ligne sur Vercel, pas à pas |
+| [`docs/LANCEMENT.md`](docs/LANCEMENT.md) | Liste de vérification avant lancement |
 
 ## Données de démonstration
-Tant qu'aucune base n'est branchée, des offres **fictives** illustrent l'interface. Elles portent le badge « Exemple fictif », ne sont pas indexées et on ne peut pas y postuler. En production : `NEXT_PUBLIC_ENABLE_DEMO_DATA=false`.
+Pour le développement, `NEXT_PUBLIC_ENABLE_DEMO_DATA=true` affiche des offres **fictives** (badge « Exemple fictif », non
+indexées, sans candidature possible). Elles sont désactivées par défaut et **toujours** en production Vercel.
 
-## Déploiement (Vercel)
-1. Importer le dépôt GitHub sur [vercel.com/new](https://vercel.com/new) (framework détecté : Next.js).
-2. Renseigner les variables d'environnement de `.env.example` dans *Settings → Environment Variables*.
-3. Déployer. Le guide complet (domaine, webhooks Stripe, DNS Resend) sera fourni en phase 9.
+## Déploiement
+Guide pas à pas : [`docs/DEPLOIEMENT.md`](docs/DEPLOIEMENT.md), puis [`docs/LANCEMENT.md`](docs/LANCEMENT.md).
+
+## Données géographiques
+`src/lib/geo/communes-idf.json` est généré (ne pas modifier à la main). Pour le régénérer : voir l'en-tête de `scripts/build-communes-idf.py` (paquets npm `@etalab/decoupage-administratif`, `codes-postaux`, `all-the-cities` en tant que fichiers de données).

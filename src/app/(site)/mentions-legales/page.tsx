@@ -13,7 +13,7 @@ export default function LegalNoticePage() {
       <Prose updatedAt="13 novembre 2026" draft>
         <h2>Éditeur du site</h2>
         <p>
-          Le site JobFinder est édité par <strong>[Raison sociale]</strong>, [forme juridique] au capital de [montant] €,
+          Le site Kairo est édité par <strong>[Raison sociale]</strong>, [forme juridique] au capital de [montant] €,
           immatriculée au RCS de [ville] sous le numéro [SIREN], dont le siège social est situé [adresse complète].
           <br />
           Numéro de TVA intracommunautaire : [numéro]. Contact : <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>.
@@ -27,8 +27,14 @@ export default function LegalNoticePage() {
         </p>
         <h2>Propriété intellectuelle</h2>
         <p>
-          La marque JobFinder, le logo, la charte graphique et le code du site sont la propriété de l&apos;éditeur. Toute
+          La marque Kairo, le logo, la charte graphique et le code du site sont la propriété de l&apos;éditeur. Toute
           reproduction sans autorisation est interdite. Les annonces restent la propriété des entreprises qui les publient.
+        </p>
+        <h2>Données géographiques</h2>
+        <p>
+          La recherche par distance utilise le référentiel des communes d&apos;Etalab et la base officielle des codes postaux de
+          La Poste (Licence Ouverte 2.0), ainsi que des coordonnées issues de{" "}
+          <a href="https://www.geonames.org" rel="noopener noreferrer" target="_blank">GeoNames</a> (licence CC BY 4.0).
         </p>
         <h2>Données personnelles</h2>
         <p>

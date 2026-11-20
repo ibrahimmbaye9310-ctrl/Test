@@ -1,0 +1,266 @@
+/**
+ * Types de la base, alignés sur supabase/migrations/. Peut être régénéré automatiquement :
+ *   npx supabase gen types typescript --project-id <id> > src/lib/supabase/database.types.ts
+ */
+type UserRole = "candidate" | "recruiter" | "admin";
+type ContractType = "cdi" | "cdd" | "interim" | "alternance" | "stage";
+type WorkTime = "full_time" | "part_time";
+type Schedule = "morning" | "day" | "evening" | "night" | "weekend";
+type Sector = "retail" | "hospitality" | "logistics" | "tech" | "health" | "admin" | "education" | "construction" | "finance" | "marketing";
+type SalaryPeriod = "hour" | "month" | "year";
+type RemoteMode = "none" | "partial" | "full";
+type OfferStatus = "draft" | "pending" | "published" | "rejected" | "closed" | "expired";
+type ApplicationStatus = "sent" | "reviewing" | "interview" | "accepted" | "rejected";
+
+/** Insert : colonnes avec valeur par défaut ou nullables → optionnelles. */
+type Insertable<Row, Required extends keyof Row> = Pick<Row, Required> & Partial<Omit<Row, Required>>;
+
+type ProfileRow = {
+  id: string;
+  role: UserRole;
+  full_name: string;
+  phone: string | null;
+  city: string | null;
+  postal_code: string | null;
+  headline: string | null;
+  bio: string | null;
+  avatar_path: string | null;
+  cv_path: string | null;
+  cv_filename: string | null;
+  cv_updated_at: string | null;
+  skills: string[];
+  availability: Schedule[];
+  availability_note: string | null;
+  desired_contracts: ContractType[];
+  desired_work_time: WorkTime | null;
+  desired_sectors: Sector[];
+  search_radius_km: number | null;
+  open_to_work: boolean;
+  suspended_at: string | null;
+  suspension_reason: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type CompanyRow = {
+  id: string;
+  owner_id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  website: string | null;
+  siret: string | null;
+  logo_path: string | null;
+  city: string | null;
+  postal_code: string | null;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+type JobOfferRow = {
+  id: string;
+  company_id: string;
+  title: string;
+  slug: string;
+  short_description: string;
+  missions: string[];
+  profile: string[];
+  benefits: string[];
+  contract_type: ContractType;
+  work_time: WorkTime;
+  schedules: Schedule[];
+  sector: Sector;
+  is_student_friendly: boolean;
+  salary_min: number | null;
+  salary_max: number | null;
+  salary_period: SalaryPeriod | null;
+  hours_per_week: number | null;
+  duration_months: number | null;
+  remote: RemoteMode;
+  city: string;
+  postal_code: string;
+  commune_code: string | null;
+  lat: number | null;
+  lng: number | null;
+  status: OfferStatus;
+  is_featured: boolean;
+  published_at: string | null;
+  expires_at: string | null;
+  views_count: number;
+  moderation_note: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type ApplicationRow = {
+  id: string;
+  job_offer_id: string;
+  candidate_id: string;
+  cover_message: string | null;
+  status: ApplicationStatus;
+  status_updated_at: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type OfferDailyViewsRow = { job_offer_id: string; day: string; views: number };
+
+type NotificationType = "application_received" | "application_status" | "offer_moderated" | "offer_expiring" | "subscription" | "system";
+type NotificationRow = { id: string; user_id: string; type: NotificationType; title: string; body: string | null; link: string | null; read_at: string | null; created_at: string };
+type ReportReason = "fraud" | "discriminatory" | "misleading" | "filled" | "inappropriate" | "other";
+type ReportRow = {
+  id: string; job_offer_id: string; reporter_id: string | null; reason: ReportReason; details: string | null;
+  status: "open" | "reviewing" | "resolved" | "dismissed"; admin_note: string | null; resolved_at: string | null; created_at: string; updated_at: string;
+};
+type SubscriptionRow = {
+  id: string; company_id: string; stripe_customer_id: string; stripe_subscription_id: string | null; plan: "starter" | "pro" | null;
+  status: "trialing" | "active" | "past_due" | "canceled" | "incomplete" | "incomplete_expired" | "unpaid" | "paused" | null;
+  current_period_end: string | null; cancel_at_period_end: boolean; created_at: string; updated_at: string;
+};
+type PaymentRow = {
+  id: string; company_id: string; kind: "subscription" | "single_offer"; stripe_reference: string; amount_cents: number; currency: string;
+  status: "pending" | "succeeded" | "failed" | "refunded"; description: string | null; created_at: string;
+};
+
+type TestimonialRow = { id: string; author_name: string; author_role: string; quote: string; consent_at: string; is_published: boolean; created_by: string | null; created_at: string };
+type AuditRow = { id: number; admin_id: string | null; action: string; target_type: "user" | "company" | "offer" | "report" | "testimonial" | "subscription"; target_id: string; details: Record<string, unknown>; created_at: string };
+export type AdminUserRow = {
+  id: string; email: string; full_name: string; role: UserRole; created_at: string; last_sign_in_at: string | null;
+  suspended_at: string | null; suspension_reason: string | null; company_name: string | null; total: number;
+};
+export type AdminStats = Record<
+  "candidates" | "recruiters" | "suspended" | "companies" | "verified_companies" | "offers_published" | "offers_pending" | "offers_total" |
+  "applications" | "applications_30d" | "signups_30d" | "reports_open" | "active_subscriptions" | "revenue_cents" | "revenue_30d_cents",
+  number
+>;
+
+type SavedJobRow = { candidate_id: string; job_offer_id: string; created_at: string };
+
+type PublicJobOfferRow = JobOfferRow & { company_name: string; company_description: string | null; company_logo_path: string | null };
+
+type Rel = {
+  foreignKeyName: string;
+  columns: string[];
+  isOneToOne: boolean;
+  referencedRelation: string;
+  referencedColumns: string[];
+};
+
+export type Database = {
+  __InternalSupabase: { PostgrestVersion: "12" };
+  public: {
+    Tables: {
+      profiles: {
+        Row: ProfileRow;
+        Insert: Insertable<ProfileRow, "id" | "full_name">;
+        Update: Partial<ProfileRow>;
+        Relationships: [];
+      };
+      companies: {
+        Row: CompanyRow;
+        Insert: Insertable<CompanyRow, "owner_id" | "name" | "slug">;
+        Update: Partial<CompanyRow>;
+        Relationships: [Rel & { foreignKeyName: "companies_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: true; referencedRelation: "profiles"; referencedColumns: ["id"] }];
+      };
+      job_offers: {
+        Row: JobOfferRow;
+        Insert: Insertable<JobOfferRow, "company_id" | "title" | "slug" | "short_description" | "contract_type" | "work_time" | "sector" | "city" | "postal_code">;
+        Update: Partial<JobOfferRow>;
+        Relationships: [Rel & { foreignKeyName: "job_offers_company_id_fkey"; columns: ["company_id"]; isOneToOne: false; referencedRelation: "companies"; referencedColumns: ["id"] }];
+      };
+      applications: {
+        Row: ApplicationRow;
+        Insert: Insertable<ApplicationRow, "job_offer_id" | "candidate_id">;
+        Update: Partial<Pick<ApplicationRow, "status">>;
+        Relationships: [
+          Rel & { foreignKeyName: "applications_job_offer_id_fkey"; columns: ["job_offer_id"]; isOneToOne: false; referencedRelation: "job_offers"; referencedColumns: ["id"] },
+          Rel & { foreignKeyName: "applications_candidate_id_fkey"; columns: ["candidate_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
+      };
+      saved_jobs: {
+        Row: SavedJobRow;
+        Insert: Insertable<SavedJobRow, "candidate_id" | "job_offer_id">;
+        Update: Partial<SavedJobRow>;
+        Relationships: [
+          Rel & { foreignKeyName: "saved_jobs_job_offer_id_fkey"; columns: ["job_offer_id"]; isOneToOne: false; referencedRelation: "job_offers"; referencedColumns: ["id"] },
+          Rel & { foreignKeyName: "saved_jobs_candidate_id_fkey"; columns: ["candidate_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
+      };
+      notifications: { Row: NotificationRow; Insert: never; Update: Pick<NotificationRow, "read_at">; Relationships: [] };
+      reports: {
+        Row: ReportRow;
+        Insert: Insertable<ReportRow, "job_offer_id" | "reporter_id" | "reason">;
+        Update: Partial<Pick<ReportRow, "status" | "admin_note" | "resolved_at">>;
+        Relationships: [];
+      };
+      subscriptions: { Row: SubscriptionRow; Insert: Insertable<SubscriptionRow, "company_id" | "stripe_customer_id">; Update: Partial<SubscriptionRow>; Relationships: [] };
+      payments: { Row: PaymentRow; Insert: Insertable<PaymentRow, "company_id" | "kind" | "stripe_reference" | "amount_cents" | "status">; Update: Partial<PaymentRow>; Relationships: [] };
+      testimonials: {
+        Row: TestimonialRow;
+        Insert: Insertable<TestimonialRow, "author_name" | "author_role" | "quote" | "consent_at">;
+        Update: Partial<TestimonialRow>;
+        Relationships: [];
+      };
+      offer_credits: {
+        Row: { id: string; company_id: string; source: "stripe" | "admin"; stripe_reference: string | null; used_offer_id: string | null; used_at: string | null; valid_until: string | null; note: string | null; created_at: string };
+        Insert: { company_id: string; source: "stripe" | "admin"; note?: string | null };
+        Update: never;
+        Relationships: [];
+      };
+      admin_audit_log: { Row: AuditRow; Insert: Insertable<Omit<AuditRow, "id">, "admin_id" | "action" | "target_type" | "target_id">; Update: never; Relationships: [] };
+      offer_daily_views: {
+        Row: OfferDailyViewsRow;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+    };
+    Views: {
+      public_job_offers: { Row: PublicJobOfferRow; Relationships: [] };
+    };
+    Functions: {
+      current_user_role: { Args: Record<string, never>; Returns: UserRole };
+      is_admin: { Args: Record<string, never>; Returns: boolean };
+      record_offer_view: { Args: { offer: string }; Returns: undefined };
+      admin_stats: { Args: Record<string, never>; Returns: AdminStats };
+      admin_list_users: { Args: { search?: string | null; role_filter?: string | null; max_rows?: number; skip?: number }; Returns: AdminUserRow[] };
+      admin_set_suspension: { Args: { target: string; suspend: boolean; reason?: string | null }; Returns: undefined };
+      my_billing_summary: { Args: Record<string, never>; Returns: { plan: "starter" | "pro" | null; limit: number; active_offers: number; credits_available: number; credits_in_use: number } | null };
+      billing_event_first_seen: { Args: { event_id: string; event_type: string }; Returns: boolean };
+      billing_event_forget: { Args: { event_id: string }; Returns: undefined };
+      billing_link_customer: { Args: { company: string; customer: string }; Returns: undefined };
+      billing_sync_subscription: { Args: { customer: string; subscription: string; new_plan: string; new_status: string; period_end: string; cancel_at_end: boolean }; Returns: string };
+      billing_record_payment: { Args: { company: string; payment_kind: string; reference: string; amount: number; cur: string; payment_status: string; label: string }; Returns: undefined };
+      billing_grant_credit: { Args: { company: string; reference: string }; Returns: undefined };
+      billing_notify: { Args: { company: string; kind: string; title: string; body: string }; Returns: undefined };
+      billing_company_of: { Args: { customer: string }; Returns: string | null };
+      server_user_contact: { Args: { target: string }; Returns: { email: string; full_name: string; role: UserRole }[] };
+      server_company_contact: { Args: { company: string }; Returns: { email: string; full_name: string; company_name: string }[] };
+      check_rate_limit: { Args: { bucket_key: string; max_hits: number; window_seconds: number }; Returns: boolean };
+    };
+    Enums: {
+      user_role: UserRole;
+      contract_type: ContractType;
+      work_time: WorkTime;
+      schedule: Schedule;
+      sector: Sector;
+      salary_period: SalaryPeriod;
+      remote_mode: RemoteMode;
+      offer_status: OfferStatus;
+      application_status: ApplicationStatus;
+    };
+    CompositeTypes: Record<string, never>;
+  };
+};
+
+export type Tables<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Row"];
+export type Profile = ProfileRow;
+export type Company = CompanyRow;
+export type Notification = NotificationRow;
+export type Testimonial = TestimonialRow;
+export type AuditEntry = AuditRow;
+export type ReportReasonValue = ReportReason;
+export type JobOfferRecord = JobOfferRow;
+export type PublicJobOffer = PublicJobOfferRow;
+export type ApplicationStatusValue = ApplicationStatus;

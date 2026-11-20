@@ -7,7 +7,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Recruter avec JobFinder",
+  title: "Recruter avec Kairo",
   description: "Publiez vos offres et recrutez étudiants, temps partiels, CDD et CDI en Île-de-France.",
   alternates: { canonical: "/entreprises" },
 };

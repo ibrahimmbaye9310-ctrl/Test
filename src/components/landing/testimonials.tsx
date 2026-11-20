@@ -19,7 +19,7 @@ export function Testimonials({ items }: { items: Testimonial[] }) {
   if (items.length === 0) return null;
   return (
     <section className="container-page py-20 sm:py-24" aria-labelledby="testimonials-title">
-      <SectionHeading align="center" eyebrow="Ils utilisent JobFinder" title={<span id="testimonials-title">Ce qu&apos;en disent nos utilisateurs</span>} />
+      <SectionHeading align="center" eyebrow="Ils utilisent Kairo" title={<span id="testimonials-title">Ce qu&apos;en disent nos utilisateurs</span>} />
       <div className="mt-12 grid gap-5 md:grid-cols-3">
         {items.map((t) => (
           <figure key={t.id} className="rounded-3xl bg-surface p-7 shadow-card ring-1 ring-line">

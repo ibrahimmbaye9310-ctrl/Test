@@ -1,8 +1,8 @@
 {
-  "name": "jobfinder",
+  "name": "kairo",
   "version": "0.1.0",
   "private": true,
-  "description": "JobFinder — Le bon job, au bon moment. Plateforme SaaS de recrutement.",
+  "description": "Kairo — Le bon job, au bon moment. Plateforme SaaS de recrutement.",
   "engines": {
     "node": ">=20.9.0"
   },
@@ -12,16 +12,24 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm run lint && npm run build"
+    "test": "vitest run",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "test:rls": "supabase/tests/run.sh",
+    "test:e2e": "tests/e2e/run-all.sh",
+    "audit:a11y": "node tests/audit/axe.cjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.0",
     "clsx": "^2.1.1",
     "geist": "^1.9.2",
     "lucide-react": "^1.72.0",
     "next": "^16.4.6",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "resend": "^6.38.1",
     "server-only": "^0.0.1",
+    "stripe": "^23.1.0",
     "tailwind-merge": "^3.7.0",
     "zod": "^4.6.7"
   },
@@ -33,6 +41,7 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.4.6",
     "tailwindcss": "^4.3.5",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
   }
 }

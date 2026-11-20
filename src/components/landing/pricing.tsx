@@ -4,7 +4,9 @@ import { ButtonLink } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/misc";
 import { cn, formatPrice } from "@/lib/utils";
 
-export function PricingCards({ className }: { className?: string }) {
+/** headingLevel : h3 sous une section titrée en h2 (accueil), h2 directement sous le h1 (page Tarifs). */
+export function PricingCards({ className, headingLevel = "h3" }: { className?: string; headingLevel?: "h2" | "h3" }) {
+  const Heading = headingLevel;
   return (
     <div className={cn("grid gap-5 lg:grid-cols-3", className)}>
       {PLAN_ORDER.map((id) => {
@@ -22,7 +24,7 @@ export function PricingCards({ className }: { className?: string }) {
                 Recommandé
               </span>
             )}
-            <h3 className={cn("text-lg font-semibold", plan.highlighted && "text-white")}>{plan.name}</h3>
+            <Heading className={cn("text-lg font-semibold", plan.highlighted && "text-white")}>{plan.name}</Heading>
             <p className={cn("mt-1.5 text-sm", plan.highlighted ? "text-navy-300" : "text-ink-muted")}>{plan.description}</p>
             <p className="mt-6 flex items-baseline gap-1.5">
               <span className="text-4xl font-semibold tracking-tight">{formatPrice(plan.priceCents)}</span>
@@ -65,7 +67,7 @@ export function Pricing() {
         />
         <PricingCards className="mx-auto mt-14 max-w-5xl" />
         <p className="mt-8 text-center text-xs text-ink-subtle">
-          Prix hors taxes. Paiement sécurisé par Stripe — JobFinder ne stocke jamais vos données bancaires.
+          Prix hors taxes. Paiement sécurisé par Stripe — Kairo ne stocke jamais vos données bancaires.
         </p>
       </div>
     </section>

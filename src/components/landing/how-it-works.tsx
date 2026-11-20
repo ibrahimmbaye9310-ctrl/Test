@@ -26,7 +26,7 @@ export function HowItWorks() {
         align="center"
         eyebrow="Comment ça marche"
         title={<span id="how-title">Trois étapes, zéro friction</span>}
-        description="JobFinder est gratuit pour les candidats. Pas de lettre de motivation obligatoire, pas de formulaire interminable."
+        description="Kairo est gratuit pour les candidats. Pas de lettre de motivation obligatoire, pas de formulaire interminable."
       />
       <ol className="relative mt-14 grid gap-6 md:grid-cols-3">
         <div className="absolute left-[16%] right-[16%] top-7 hidden h-px bg-gradient-to-r from-transparent via-line-strong to-transparent md:block" aria-hidden />

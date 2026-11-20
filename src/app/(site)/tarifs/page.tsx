@@ -18,7 +18,7 @@ export default function PricingPage() {
         description="Gratuit pour les candidats. Pour les entreprises, trois formules claires, sans engagement, résiliables à tout moment."
       />
       <div className="container-page py-16">
-        <PricingCards className="mx-auto max-w-5xl" />
+        <PricingCards className="mx-auto max-w-5xl" headingLevel="h2" />
         <p className="mt-8 text-center text-xs text-ink-subtle">
           Prix hors taxes. Paiement sécurisé par Stripe. Changement de formule ou résiliation en un clic depuis votre espace.
         </p>

@@ -8,12 +8,12 @@ import { CompanyAvatar, DemoBadge } from "@/components/ui/misc";
 import { cn, formatRelativeDate } from "@/lib/utils";
 import { formatSalary } from "./format";
 
-export function JobCard({ offer, className }: { offer: JobOfferSummary; className?: string }) {
+export function JobCard({ offer, className, distanceKm }: { offer: JobOfferSummary; className?: string; distanceKm?: number | null }) {
   const salary = formatSalary(offer);
   return (
     <Card interactive className={cn("group relative flex flex-col p-5", className)}>
       <div className="flex items-start gap-3.5">
-        <CompanyAvatar name={offer.companyName} />
+        <CompanyAvatar name={offer.companyName} logoUrl={offer.companyLogoUrl} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <p className="truncate text-sm text-ink-muted">{offer.companyName}</p>
@@ -50,6 +50,7 @@ export function JobCard({ offer, className }: { offer: JobOfferSummary; classNam
           <p className="flex items-center gap-1.5">
             <MapPin className="size-3.5 text-ink-subtle" aria-hidden />
             {offer.city} ({offer.postalCode.slice(0, 2)})
+            {distanceKm != null && <span className="text-ink-subtle">· {distanceKm < 1 ? "< 1" : Math.round(distanceKm)} km</span>}
           </p>
           <p className="flex items-center gap-1.5">
             <Clock className="size-3.5 text-ink-subtle" aria-hidden />

@@ -10,3 +10,8 @@ next-env.d.ts
 .vercel
 .DS_Store
 npm-debug.log*
+
+# Tests de bout en bout
+tests/e2e/.admin.json
+tests/e2e/.accounts.log
+.server.log
