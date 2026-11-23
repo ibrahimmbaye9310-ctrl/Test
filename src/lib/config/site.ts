@@ -6,8 +6,28 @@ export const siteConfig = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   locale: "fr_FR",
   launchRegion: "Île-de-France",
-  contactEmail: "contact@kairo.fr",
+  contactEmail: "ibrahimmbaye9310@gmail.com",
 } as const;
+
+/**
+ * Éditeur du site (mentions légales, CGU/CGV, politique de confidentialité).
+ * Tant qu'un champ obligatoire est vide, les pages légales affichent un bandeau « à finaliser ».
+ * `siret` : à renseigner dès l'immatriculation (obligatoire avant d'encaisser de vrais paiements).
+ */
+export const publisher = {
+  firstName: "",
+  lastName: "Mbaye",
+  street: "21 rue Malot",
+  postalCode: "",
+  city: "",
+  siret: "" as string,
+  /** Micro-entreprise en franchise en base de TVA : mention « TVA non applicable, art. 293 B du CGI ». */
+  vatExempt: true,
+};
+
+export const publisherName = [publisher.firstName, publisher.lastName].filter(Boolean).join(" ");
+export const publisherAddress = [publisher.street, [publisher.postalCode, publisher.city].filter(Boolean).join(" "), "France"].filter(Boolean).join(", ");
+export const publisherComplete = Boolean(publisher.firstName && publisher.lastName && publisher.street && publisher.postalCode && publisher.city);
 
 /**
  * Offres de démonstration (fictives) : uniquement si NEXT_PUBLIC_ENABLE_DEMO_DATA vaut exactement "true".

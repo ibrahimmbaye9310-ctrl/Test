@@ -33,7 +33,7 @@ const columns = [
       { href: "/mentions-legales", label: "Mentions légales" },
       { href: "/confidentialite", label: "Politique de confidentialité" },
       { href: "/confidentialite#cookies", label: "Cookies" },
-      { href: "/cgu", label: "Conditions d'utilisation" },
+      { href: "/cgu", label: "CGU et CGV" },
     ],
   },
 ];

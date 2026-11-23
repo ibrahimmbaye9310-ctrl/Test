@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/layout/page-header";
 import { Prose } from "@/components/layout/prose";
-import { siteConfig } from "@/lib/config/site";
+import { publisherAddress, publisherComplete, publisherName, siteConfig } from "@/lib/config/site";
 
 export const metadata: Metadata = { title: "Politique de confidentialité", alternates: { canonical: "/confidentialite" } };
 
@@ -20,11 +20,11 @@ export default function PrivacyPage() {
   return (
     <>
       <PageHeader title="Politique de confidentialité" description="Comment Kairo collecte, utilise et protège vos données personnelles." />
-      <Prose updatedAt="15 novembre 2026" draft>
+      <Prose updatedAt="23 novembre 2026" draft={!publisherComplete}>
         <h2>Responsable du traitement</h2>
         <p>
-          [Raison sociale], [adresse], est responsable du traitement des données collectées sur Kairo. Pour toute
-          question ou demande : <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>.
+          {publisherName}, éditeur de Kairo, domicilié {publisherAddress}, est responsable du traitement des données
+          collectées sur Kairo. Pour toute question ou demande : <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>.
         </p>
         <h2>Données traitées, finalités et durées</h2>
         <div className="overflow-x-auto">

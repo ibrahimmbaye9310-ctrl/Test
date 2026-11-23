@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { Prose } from "@/components/layout/prose";
-import { siteConfig } from "@/lib/config/site";
+import { publisher, publisherAddress, publisherComplete, publisherName, siteConfig } from "@/lib/config/site";
 
 export const metadata: Metadata = { title: "Mentions légales", alternates: { canonical: "/mentions-legales" } };
 
@@ -10,20 +10,29 @@ export default function LegalNoticePage() {
   return (
     <>
       <PageHeader title="Mentions légales" />
-      <Prose updatedAt="13 novembre 2026" draft>
+      <Prose updatedAt="23 novembre 2026" draft={!publisherComplete}>
         <h2>Éditeur du site</h2>
+        {publisher.siret ? (
+          <p>
+            Le site Kairo est édité par <strong>{publisherName}</strong>, entrepreneur individuel, immatriculé sous le numéro
+            SIRET {publisher.siret}, domicilié {publisherAddress}.
+            {publisher.vatExempt && <> TVA non applicable, article 293 B du Code général des impôts.</>}
+          </p>
+        ) : (
+          <p>
+            Le site Kairo est édité par <strong>{publisherName}</strong>, personne physique, domicilié {publisherAddress}.
+          </p>
+        )}
         <p>
-          Le site Kairo est édité par <strong>[Raison sociale]</strong>, [forme juridique] au capital de [montant] €,
-          immatriculée au RCS de [ville] sous le numéro [SIREN], dont le siège social est situé [adresse complète].
+          Contact : <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>.
           <br />
-          Numéro de TVA intracommunautaire : [numéro]. Contact : <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>.
+          Directeur de la publication : {publisherName}.
         </p>
-        <p>Directeur·rice de la publication : [Prénom Nom], en qualité de [fonction].</p>
         <h2>Hébergement</h2>
         <p>
           Application : Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis — vercel.com.
           <br />
-          Base de données et fichiers : Supabase Inc., hébergement dans une région de l&apos;Union européenne — supabase.com.
+          Base de données et fichiers : Supabase Inc., hébergement dans une région de l&apos;Union européenne (Irlande) — supabase.com.
         </p>
         <h2>Propriété intellectuelle</h2>
         <p>
